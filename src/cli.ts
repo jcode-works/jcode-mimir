@@ -12,7 +12,7 @@ const program = new Command();
 program
   .name("kb")
   .description("Local-first RAG knowledge base for private project documents.")
-  .version("0.1.1");
+  .version("0.1.2");
 
 program
   .command("init")

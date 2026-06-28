@@ -31,9 +31,21 @@ ollama pull gemma4
 
 ## Install From npm
 
+The package is public. Users do not need a JCode account or npm token to install it.
+
+With pnpm:
+
 ```bash
 pnpm add -D @jcode.labs/mimir
 ```
+
+With npm:
+
+```bash
+npm install --save-dev @jcode.labs/mimir
+```
+
+Maintainer tokens are only needed to publish new versions.
 
 ## Install From Git
 
@@ -59,17 +71,28 @@ pnpm pack
 Initialize the local project config:
 
 ```bash
-pnpm kb init
+pnpm exec kb init
 ```
 
 Add private documents under `private/`, then run:
 
 ```bash
-pnpm kb ingest
-pnpm kb search "vendor invoice status"
-pnpm kb ask "What do the documents prove?"
-pnpm kb audit
-pnpm kb status
+pnpm exec kb ingest
+pnpm exec kb search "vendor invoice status"
+pnpm exec kb ask "What do the documents prove?"
+pnpm exec kb audit
+pnpm exec kb status
+```
+
+With npm, use `npx` after installing the package:
+
+```bash
+npx kb init
+npx kb ingest
+npx kb search "vendor invoice status"
+npx kb ask "What do the documents prove?"
+npx kb audit
+npx kb status
 ```
 
 ## Data Boundary
