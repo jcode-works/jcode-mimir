@@ -78,7 +78,7 @@
     "@types/html-to-text": "^9.0.4",
     "@types/node": "^24.10.1",
     "publint": "^0.3.21",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.3",
     "vitest": "^4.0.15"
   },
   "packageManager": "pnpm@11.9.0"
