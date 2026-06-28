@@ -60,12 +60,12 @@
     "validate": "pnpm lint && pnpm check && pnpm test && pnpm build && pnpm smoke && pnpm package:check"
   },
   "dependencies": {
-    "@lancedb/lancedb": "^0.22.1",
+    "@lancedb/lancedb": "^0.30.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "commander": "^14.0.2",
     "fast-glob": "^3.3.3",
     "html-to-text": "^9.0.5",
-    "ollama": "^0.5.16",
+    "ollama": "^0.6.3",
     "picocolors": "^1.1.1",
     "unpdf": "^1.4.0",
     "yaml": "^2.8.1",
