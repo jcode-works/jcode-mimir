@@ -76,7 +76,7 @@
     "@commitlint/cli": "^21.1.0",
     "@commitlint/config-conventional": "^21.1.0",
     "@types/html-to-text": "^9.0.4",
-    "@types/node": "^24.10.1",
+    "@types/node": "^26.0.1",
     "publint": "^0.3.21",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"
