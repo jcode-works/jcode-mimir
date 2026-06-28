@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.1 - 2026-06-29
+
+- Add an Edge-compatible Mimir TTS engine so `kb audio` can match the global Voice Forge quality
+  path with `edge-tts`, `fr-FR-DeniseNeural`, and MP3 output.
+- Keep Transformers.js WAV rendering as the explicit offline/confidential path.
+- Remove duplicated governance documents from package directories; root project docs are the single
+  source of truth.
+
 ## 0.4.0 - 2026-06-28
 
 - Reposition Mimir as sovereign local RAG for confidential datasets and AI agents.

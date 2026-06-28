@@ -3,7 +3,7 @@
 [![CI](https://github.com/jcode-works/jcode-mimir/actions/workflows/ci.yml/badge.svg)](https://github.com/jcode-works/jcode-mimir/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/jcode-works/jcode-mimir/actions/workflows/codeql.yml/badge.svg)](https://github.com/jcode-works/jcode-mimir/actions/workflows/codeql.yml)
 [![npm](https://img.shields.io/npm/v/@jcode.labs/mimir)](https://www.npmjs.com/package/@jcode.labs/mimir)
-[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jcode-works/jcode-mimir/blob/main/LICENSE)
 
 Open-source, sovereign local RAG for confidential datasets and AI agents.
 
@@ -27,8 +27,10 @@ Built by Jean-Baptiste Thery, freelance full-stack/AI tooling engineer at JCode 
 Mimir is a public open-source project under the MIT License. It is designed to be
 inspectable, forkable, and usable without a JCode Labs account.
 
-Contributions are welcome through pull requests. Start with [`CONTRIBUTING.md`](./CONTRIBUTING.md).
-Security reports should stay private and follow the policy in [`SECURITY.md`](./SECURITY.md).
+Contributions are welcome through pull requests. Start with
+[`CONTRIBUTING.md`](https://github.com/jcode-works/jcode-mimir/blob/main/CONTRIBUTING.md).
+Security reports should stay private and follow the policy in
+[`SECURITY.md`](https://github.com/jcode-works/jcode-mimir/blob/main/SECURITY.md).
 
 ## Sponsors
 
@@ -56,8 +58,8 @@ Early public package. APIs may evolve before `1.0.0`.
   retrieval layer.
 - Retrieve grounded local evidence through CLI, library calls, MCP tools, or the bundled agent
   skills so your chosen AI agent can produce cited summaries.
-- Optionally create listenable WAV summaries with `kb audio`, `@jcode.labs/mimir-tts`, and the
-  bundled `mimir-audio-summary` skill.
+- Optionally create listenable MP3 or WAV summaries with `kb audio`, `@jcode.labs/mimir-tts`, and
+  the bundled `mimir-audio-summary` skill.
 
 Mimir is not a hosted SaaS, not a remote vector database, and not a certified high-assurance system.
 For regulated or state-grade environments, pair it with encrypted disks, controlled machines, release
@@ -79,7 +81,7 @@ context.
 | Build an internal knowledge base | "What is the policy for incident review?", "Who owns this process?", "Which source says that?" |
 | Prepare meetings or decisions | "Give me a one-page briefing.", "What is missing before deciding?", "List action items and evidence." |
 | Ask questions over offline documents | "Which files mention local-only operation?", "What evidence supports this claim?" |
-| Generate audio briefings | "Create a listenable summary of the current dossier using offline TTS." |
+| Generate audio briefings | "Create a listenable high-quality or offline summary of the current dossier." |
 
 ## Requirements
 
@@ -90,8 +92,11 @@ context.
   default.
 - Generated answers are intentionally outside Mimir core. Use Claude, Codex, OpenAI, a local model
   MCP server, or another trusted model runtime to synthesize from Mimir's cited context.
-- Optional audio summaries use the separate `@jcode.labs/mimir-tts` workspace package. It renders
-  WAV files with Transformers.js and does not require Python, ffmpeg, Piper, XTTS, or a local server.
+- Optional audio summaries use the separate `@jcode.labs/mimir-tts` workspace package. For the
+  highest quality, install the external `edge-tts` CLI and render Edge MP3 output with
+  `fr-FR-DeniseNeural`. For confidential or air-gapped content, use the Transformers.js WAV path
+  with `--engine transformers --offline`; it does not require Python, ffmpeg, Piper, XTTS, or a
+  local server.
 
 ## Install From npm
 
@@ -289,28 +294,40 @@ Use `embeddingProvider: "local-hash"` for a no-model offline workflow. Use
 `embeddingProvider: "transformers"` with preloaded model files for semantic offline retrieval.
 Generated answers should come from a trusted external agent or model runtime.
 
-### Generate A Local Audio Briefing
+### Generate An Audio Briefing
 
-Mimir includes a plug-and-play JS text-to-speech path for listenable summaries:
+Mimir includes a plug-and-play text-to-speech path for listenable summaries. For the same quality
+path as the global Voice Forge skill, install `edge-tts` and render MP3:
 
 ```bash
 pnpm exec kb audio --doctor
-pnpm exec kb audio /tmp/MIMIR-SUMMARY-project.txt --out .mimir/audio/project-summary.wav
+pipx install edge-tts
+pnpm exec kb audio /tmp/MIMIR-SUMMARY-project.txt \
+  --engine edge \
+  --out .mimir/audio/project-summary.mp3
 ```
 
-The command writes WAV output locally and does not require Python or ffmpeg. The first render can
-download a public Transformers.js-compatible model into `.mimir/models/tts`; the narration text is
-processed locally. For confidential air-gapped work, preload model files and run:
+The Edge path uses the online Microsoft Edge TTS service through the `edge-tts` CLI. Use it only
+when sending the narration text to that service is acceptable.
+
+For confidential or air-gapped work, preload Transformers.js-compatible model files and render WAV
+offline:
 
 ```bash
-pnpm exec kb audio /tmp/MIMIR-SUMMARY-project.txt --out .mimir/audio/project-summary.wav --offline
+pnpm exec kb audio /tmp/MIMIR-SUMMARY-project.txt \
+  --engine transformers \
+  --offline \
+  --model-path .mimir/models/tts \
+  --out .mimir/audio/project-summary.wav
 ```
 
 The standalone package can also be installed directly:
 
 ```bash
 pnpm add -D @jcode.labs/mimir-tts
-pnpm exec mimir-tts render /tmp/MIMIR-SUMMARY-project.txt --out .mimir/audio/project-summary.wav
+pnpm exec mimir-tts render /tmp/MIMIR-SUMMARY-project.txt \
+  --engine edge \
+  --out .mimir/audio/project-summary.mp3
 ```
 
 ## Agent Skills And MCP
@@ -405,7 +422,8 @@ pnpm exec kb destroy-index --yes
 ```
 
 For air-gapped operation, release verification, secure deletion limits, and threat model details,
-read [`SECURITY-HARDENING.md`](./SECURITY-HARDENING.md).
+read
+[`SECURITY-HARDENING.md`](https://github.com/jcode-works/jcode-mimir/blob/main/SECURITY-HARDENING.md).
 
 ## Supported Files
 

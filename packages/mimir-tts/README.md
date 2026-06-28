@@ -1,10 +1,16 @@
 # Mimir TTS
 
-Plug-and-play local text-to-speech for Mimir audio summaries.
+Plug-and-play text-to-speech for Mimir audio summaries.
 
-`@jcode.labs/mimir-tts` renders narration text to WAV with Transformers.js. It does not require
-Python, ffmpeg, Piper, XTTS, or a local server. The first render can download a public ONNX model
-from Hugging Face into `.mimir/models/tts`; the source text is processed locally.
+`@jcode.labs/mimir-tts` has two explicit paths:
+
+- Edge MP3 for the same quality path as the global Voice Forge skill. It uses the external
+  `edge-tts` CLI, `fr-FR-DeniseNeural`, and `+0%` rate by default.
+- Transformers.js WAV for confidential or air-gapped use. It does not require Python, ffmpeg,
+  Piper, XTTS, or a local server.
+
+The Edge path sends the narration text to the online Edge TTS service. Use the Transformers.js path
+for private content.
 
 ## Install
 
@@ -12,16 +18,30 @@ from Hugging Face into `.mimir/models/tts`; the source text is processed locally
 pnpm add -D @jcode.labs/mimir-tts
 ```
 
-## Render
+Install Edge TTS only when you want the highest-quality online MP3 renderer:
 
 ```bash
-pnpm exec mimir-tts render /tmp/MIMIR-SUMMARY-tax.txt --out .mimir/audio/tax-summary.wav
+pipx install edge-tts
 ```
 
-For offline or air-gapped use, preload the model files and run:
+## Render
+
+High-quality MP3:
 
 ```bash
-pnpm exec mimir-tts render summary.txt --offline --model-path .mimir/models/tts
+pnpm exec mimir-tts render /tmp/MIMIR-SUMMARY-tax.txt \
+  --engine edge \
+  --out .mimir/audio/tax-summary.mp3
+```
+
+Offline/confidential WAV:
+
+```bash
+pnpm exec mimir-tts render summary.txt \
+  --engine transformers \
+  --offline \
+  --model-path .mimir/models/tts \
+  --out .mimir/audio/summary.wav
 ```
 
 ## Doctor
@@ -30,4 +50,5 @@ pnpm exec mimir-tts render summary.txt --offline --model-path .mimir/models/tts
 pnpm exec mimir-tts doctor --json
 ```
 
-The default model is `Xenova/mms-tts-fra`. Override it with `--model` or `MIMIR_TTS_MODEL`.
+The default Transformers.js model is `Xenova/mms-tts-fra`. Override it with `--model` or
+`MIMIR_TTS_MODEL`.
