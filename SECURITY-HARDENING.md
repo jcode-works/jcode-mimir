@@ -19,15 +19,17 @@ built to minimize data movement, but it is not a certified high-assurance system
   default.
 - MCP is read-focused: destructive tools are not exposed over MCP, and MCP retrieval is capped by
   `mcpMaxTopK`.
-- Optional audio summaries use `kb audio` / `@jcode.labs/mimir-tts` for local WAV rendering with
-  Transformers.js. They do not require Python, ffmpeg, Piper, XTTS, or a local TTS server.
+- Optional audio summaries use `kb audio` / `@jcode.labs/mimir-tts`. Edge MP3 gives the highest
+  quality when online TTS is acceptable. Transformers.js WAV is the offline/confidential path and
+  does not require Python, ffmpeg, Piper, XTTS, or a local TTS server.
 - npm releases are published with provenance from the protected GitHub Actions workflow.
 - Release artifacts include a package tarball, SHA256 checksums, SBOM, and manifest.
 
 ## Threat Model
 
 Mimir protects against accidental repository leaks, accidental built-in LLM usage, accidental online
-TTS usage for generated summaries, accidental secret indexing, and weak release traceability.
+TTS usage when the offline path is requested, accidental secret indexing, and weak release
+traceability.
 
 Mimir does not protect against a compromised local machine, malicious dependencies already present
 in the runtime, a user with filesystem access to the same checkout, or forensic recovery from an
@@ -65,7 +67,8 @@ pnpm exec kb ingest
 
 For semantic embeddings, preload the Transformers.js-compatible embedding model files inside the
 offline environment under the configured `embeddingModelPath`. For audio, preload the TTS model
-files under `.mimir/models/tts` and render with `pnpm exec kb audio <text-file> --offline`.
+files under `.mimir/models/tts` and render with
+`pnpm exec kb audio <text-file> --engine transformers --offline`.
 
 ## Zero Network Posture
 
@@ -130,17 +133,20 @@ Redaction changes the indexed text, not the raw files under `private/`.
 
 `kb install-skill` installs an optional `mimir-audio-summary` skill. It is designed for listenable
 briefings from a local Mimir index. The default renderer is `kb audio`, backed by
-`@jcode.labs/mimir-tts` and Transformers.js.
+`@jcode.labs/mimir-tts`.
 
 Confidentiality defaults:
 
 - narration text is written to a temp file outside the repository;
-- generated WAV audio should be written under `.mimir/audio/`;
+- generated MP3 or WAV audio should be written under `.mimir/audio/`;
 - `.mimir/` is ignored by Git;
-- Python, ffmpeg, Piper, XTTS, and local TTS servers are not required for the default path;
-- the first online-enabled render may download public model weights into `.mimir/models/tts`, but
-  the narration text is processed locally;
-- `--offline` disables remote model loading and requires preloaded model files.
+- Edge MP3 uses the online Edge TTS service through the external `edge-tts` CLI and should be used
+  only when sending the narration text to that service is acceptable;
+- Transformers.js WAV does not require Python, ffmpeg, Piper, XTTS, or a local TTS server;
+- the first online-enabled Transformers render may download public model weights into
+  `.mimir/models/tts`, but the narration text is processed locally;
+- `--engine transformers --offline` disables remote model loading and requires preloaded model
+  files.
 
 Generated audio can still contain sensitive information. Treat it like a derived confidential
 document.

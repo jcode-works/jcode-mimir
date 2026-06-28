@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { parseArgs } from "node:util"
-import { doctor, type RenderSpeechOptions, renderSpeech } from "./index.js"
+import { doctor, type RenderSpeechOptions, renderSpeech, type TtsEngine } from "./index.js"
 
 type CliValues = Record<string, string | boolean | undefined>
 
@@ -34,8 +34,11 @@ async function runDoctor(args: string[]): Promise<void> {
   }
 
   printKeyValue("node", report.node)
+  printKeyValue("defaultEngine", report.defaultEngine)
   printKeyValue("defaultModel", report.defaultModel)
   printKeyValue("defaultModelPath", report.defaultModelPath)
+  printKeyValue("edgeTtsAvailable", String(report.edgeTtsAvailable))
+  printKeyValue("edgeDefaultVoice", report.edgeDefaultVoice)
   printKeyValue("transformersAvailable", String(report.transformersAvailable))
   printKeyValue("pythonRequired", String(report.pythonRequired))
   printKeyValue("ffmpegRequired", String(report.ffmpegRequired))
@@ -48,10 +51,13 @@ async function runRender(args: string[]): Promise<void> {
     allowPositionals: true,
     options: {
       out: { type: "string", short: "o" },
+      engine: { type: "string" },
       model: { type: "string" },
       "model-path": { type: "string" },
       offline: { type: "boolean" },
       "allow-remote-models": { type: "boolean" },
+      voice: { type: "string" },
+      rate: { type: "string" },
       "speaker-embeddings": { type: "string" },
       speed: { type: "string" },
       json: { type: "boolean" },
@@ -66,9 +72,12 @@ async function runRender(args: string[]): Promise<void> {
     textFile,
   }
   addStringOption(renderOptions, "outputPath", stringValue(values, "out"))
+  addEngineOption(renderOptions, engineValue(values))
   addStringOption(renderOptions, "model", stringValue(values, "model"))
   addStringOption(renderOptions, "modelPath", stringValue(values, "model-path"))
   addBooleanOption(renderOptions, "allowRemoteModels", allowRemoteModels(values))
+  addStringOption(renderOptions, "voice", stringValue(values, "voice"))
+  addStringOption(renderOptions, "rate", stringValue(values, "rate"))
   addStringOption(renderOptions, "speakerEmbeddings", stringValue(values, "speaker-embeddings"))
   addNumberOption(renderOptions, "speed", numberValue(values, "speed"))
 
@@ -79,9 +88,13 @@ async function runRender(args: string[]): Promise<void> {
     return
   }
   printKeyValue("outputPath", result.outputPath)
+  printKeyValue("engine", result.engine)
+  printKeyValue("outputFormat", result.outputFormat)
   printKeyValue("model", result.model)
   printKeyValue("modelPath", result.modelPath)
   printKeyValue("allowRemoteModels", String(result.allowRemoteModels))
+  printKeyValue("voice", result.voice ?? "none")
+  printKeyValue("rate", result.rate ?? "none")
   printKeyValue("samplingRate", String(result.samplingRate ?? "unknown"))
   printKeyValue("samples", String(result.samples ?? "unknown"))
 }
@@ -101,9 +114,29 @@ function stringValue(values: CliValues, key: string): string | undefined {
   return typeof value === "string" ? value : undefined
 }
 
+function engineValue(values: CliValues): TtsEngine | undefined {
+  if (values.offline === true) {
+    return "transformers"
+  }
+  const value = stringValue(values, "engine")
+  if (value === undefined) {
+    return undefined
+  }
+  if (value === "auto" || value === "edge" || value === "transformers") {
+    return value
+  }
+  throw new Error("Expected --engine to be auto, edge, or transformers.")
+}
+
+function addEngineOption(target: RenderSpeechOptions, value: TtsEngine | undefined): void {
+  if (value !== undefined) {
+    target.engine = value
+  }
+}
+
 function addStringOption(
   target: RenderSpeechOptions,
-  key: "outputPath" | "model" | "modelPath" | "speakerEmbeddings",
+  key: "outputPath" | "model" | "modelPath" | "voice" | "rate" | "speakerEmbeddings",
   value: string | undefined,
 ): void {
   if (value !== undefined) {
@@ -152,13 +185,16 @@ function printHelp(): void {
 
 Usage:
   mimir-tts doctor [--json]
-  mimir-tts render <text-file> [--out output.wav] [--offline]
+  mimir-tts render <text-file> [--out output.mp3] [--engine edge]
 
 Options:
+  --engine <engine>             auto, edge, or transformers. Auto uses Edge when available.
   --model <id>                 Transformers.js TTS model ID.
   --model-path <path>          Local model/cache path. Defaults to .mimir/models/tts.
-  --offline                    Disable remote model downloads.
+  --offline                    Force the Transformers.js local/offline WAV path.
   --allow-remote-models        Explicitly allow remote model downloads.
+  --voice <voice>              Edge voice. Defaults to fr-FR-DeniseNeural.
+  --rate <rate>                Edge rate. Defaults to +0%.
   --speaker-embeddings <path>  Optional model-specific speaker embedding path or URL.
   --speed <number>             Optional model-specific speech speed.
   --json                       Print JSON output.

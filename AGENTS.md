@@ -22,8 +22,10 @@
   Avoid claiming universal binary-file support; unsupported proprietary formats need extraction or
   dedicated parsers.
 - Keep optional audio summaries separate from core ingestion/query behavior. The
-  `mimir-audio-summary` skill must prefer `kb audio` / `@jcode.labs/mimir-tts`, support offline
-  model loading, and keep generated audio under ignored local Mimir state.
+  `mimir-audio-summary` skill must prefer `kb audio` / `@jcode.labs/mimir-tts`, use the Edge MP3
+  path for global Voice Forge quality when online TTS is explicitly acceptable, support the
+  Transformers.js WAV path for offline/confidential rendering, and keep generated audio under
+  ignored local Mimir state.
 - Keep the repository as a simple pnpm workspace monorepo. Add Turbo only if multiple packages or
   apps start needing task caching/orchestration beyond `pnpm --filter`.
 - Keep Mimir core free of Ollama. `embeddingProvider: "local-hash"` supports ingestion, search, MCP,
@@ -77,7 +79,8 @@ General principles (KISS, DRY, YAGNI, SOLID) as applied in this codebase. Match 
 - `packages/mimir/src/query.ts` performs vector search and returns cited retrieval context; LLM synthesis belongs
   outside Mimir core.
 - `packages/mimir/src/mcp.ts` exposes Mimir as an MCP stdio server for agents.
-- `packages/mimir-tts` is the standalone JS/ONNX TTS package used by `kb audio`.
+- `packages/mimir-tts` is the standalone TTS package used by `kb audio`; it uses `edge-tts` for
+  high-quality MP3 when available and Transformers.js for offline WAV rendering.
 - `packages/mimir/src/gitignore.ts` owns target-repository `.gitignore` entries for local generated Mimir
   state.
 - `packages/mimir/src/security.ts`, `packages/mimir/src/redaction.ts`, and

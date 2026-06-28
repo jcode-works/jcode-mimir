@@ -63,8 +63,9 @@ The ingest pipeline (`packages/mimir/src/ingest.ts`) chains single-responsibilit
 `embeddings.ts` (vectorize) → `store.ts` (LanceDB). `query.ts` embeds the query and runs vector
 search; `ask` returns cited passages only (no LLM synthesis in core).
 
-`packages/mimir-tts` is a separate ESM package that uses Transformers.js text-to-speech to render
-WAV files without Python or ffmpeg. Core `kb audio` imports it dynamically.
+`packages/mimir-tts` is a separate ESM package. It uses `edge-tts` for high-quality MP3 when the
+external CLI is installed, and Transformers.js for offline WAV rendering without Python or ffmpeg.
+Core `kb audio` imports it dynamically.
 
 Key behaviors to keep in mind before editing:
 

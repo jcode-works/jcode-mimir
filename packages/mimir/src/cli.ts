@@ -192,11 +192,14 @@ program
   .command("audio")
   .description("Render a narration text file to local speech audio with Mimir TTS.")
   .argument("[text-file]", "Narration text file to render.")
-  .option("-o, --out <path>", "Output WAV path.")
+  .option("-o, --out <path>", "Output MP3 or WAV path.")
+  .option("--engine <engine>", "TTS engine: auto, edge, or transformers.")
   .option("--model <id>", "Transformers.js TTS model ID.")
   .option("--model-path <path>", "Local model/cache path.")
-  .option("--offline", "Disable remote model downloads.")
+  .option("--offline", "Force the Transformers.js local/offline WAV path.")
   .option("--allow-remote-models", "Explicitly allow remote model downloads.")
+  .option("--voice <voice>", "Edge voice. Defaults to fr-FR-DeniseNeural.")
+  .option("--rate <rate>", "Edge rate. Defaults to +0%.")
   .option("--speaker-embeddings <path>", "Optional model-specific speaker embedding path or URL.")
   .option("--speed <number>", "Optional model-specific speech speed.", parseNumber)
   .option("--doctor", "Show TTS runtime readiness instead of rendering.")
@@ -221,9 +224,12 @@ program
       textFile,
     }
     addOption(renderOptions, "outputPath", options.out)
+    addOption(renderOptions, "engine", audioEngine(options))
     addOption(renderOptions, "model", options.model)
     addOption(renderOptions, "modelPath", options.modelPath)
     addOption(renderOptions, "allowRemoteModels", audioAllowRemoteModels(options))
+    addOption(renderOptions, "voice", options.voice)
+    addOption(renderOptions, "rate", options.rate)
     addOption(renderOptions, "speakerEmbeddings", options.speakerEmbeddings)
     addOption(renderOptions, "speed", options.speed)
 
@@ -290,10 +296,13 @@ function withTopK(topK: number | undefined): { cwd: string; topK?: number } {
 
 interface AudioOptions {
   out?: string
+  engine?: string
   model?: string
   modelPath?: string
   offline?: boolean
   allowRemoteModels?: boolean
+  voice?: string
+  rate?: string
   speakerEmbeddings?: string
   speed?: number
   doctor?: boolean
@@ -309,9 +318,12 @@ interface TtsRenderOptions {
   cwd: string
   textFile: string
   outputPath?: string
+  engine?: "auto" | "edge" | "transformers"
   model?: string
   modelPath?: string
   allowRemoteModels?: boolean
+  voice?: string
+  rate?: string
   speakerEmbeddings?: string
   speed?: number
 }
@@ -343,6 +355,19 @@ function audioAllowRemoteModels(options: AudioOptions): boolean | undefined {
     return true
   }
   return undefined
+}
+
+function audioEngine(options: AudioOptions): TtsRenderOptions["engine"] | undefined {
+  if (options.offline) {
+    return "transformers"
+  }
+  if (options.engine === undefined) {
+    return undefined
+  }
+  if (options.engine === "auto" || options.engine === "edge" || options.engine === "transformers") {
+    return options.engine
+  }
+  throw new Error("Expected --engine to be auto, edge, or transformers.")
 }
 
 function printMaybeJson(value: unknown, json: boolean | undefined): void {

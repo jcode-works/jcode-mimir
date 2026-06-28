@@ -58,8 +58,8 @@ try {
   )
   assertIncludes(
     audioDoctor.stdout,
-    '"outputFormat": "wav"',
-    "audio doctor should report WAV output",
+    '"outputFormat": "mp3-or-wav"',
+    "audio doctor should report MP3 or WAV output",
   )
 
   await runKb(["install-skill"], tempRoot)

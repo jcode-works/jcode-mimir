@@ -7,8 +7,8 @@ agents.
 
 - [`@jcode.labs/mimir`](./packages/mimir): core CLI, library, MCP server, bundled agent skills, and
   synthetic examples.
-- [`@jcode.labs/mimir-tts`](./packages/mimir-tts): plug-and-play JS/ONNX text-to-speech renderer
-  used by `kb audio`.
+- [`@jcode.labs/mimir-tts`](./packages/mimir-tts): plug-and-play Edge-quality MP3 and offline
+  Transformers.js WAV renderer used by `kb audio`.
 
 ## Development
 
