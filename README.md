@@ -10,6 +10,15 @@ agents.
 - [`@jcode.labs/mimir-tts`](./packages/mimir-tts): plug-and-play Edge-quality MP3 and offline
   Transformers.js WAV renderer used by `kb audio`.
 
+## Documentation
+
+- [Getting started](./docs/getting-started.md): install Mimir and get the first useful search.
+- [CLI reference](./docs/cli-reference.md): every `kb` and `mimir-tts` command with when to use it.
+- [Troubleshooting](./docs/troubleshooting.md): common setup, indexing, audio, and release issues.
+- [Security hardening](./SECURITY-HARDENING.md): threat model, offline operation, and release
+  verification.
+- [UX/DX audit](./docs/ux-dx-audit.md): current findings, fixes, and remaining product risks.
+
 ## Development
 
 ```bash

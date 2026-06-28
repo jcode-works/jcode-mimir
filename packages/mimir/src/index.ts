@@ -1,5 +1,6 @@
 export { loadConfig } from "./config.js"
 export { destroyIndex } from "./destroy.js"
+export { doctor } from "./doctor.js"
 export { audit, ingest } from "./ingest.js"
 export { initProject } from "./init.js"
 export { serveMcp } from "./mcp.js"
@@ -12,6 +13,7 @@ export type {
   AuditReport,
   Config,
   DestroyIndexResult,
+  DoctorReport,
   IngestResult,
   SearchResult,
   SecurityAuditReport,

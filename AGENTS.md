@@ -22,9 +22,9 @@
   Avoid claiming universal binary-file support; unsupported proprietary formats need extraction or
   dedicated parsers.
 - Keep optional audio summaries separate from core ingestion/query behavior. The
-  `mimir-audio-summary` skill must prefer `kb audio` / `@jcode.labs/mimir-tts`, use the Edge MP3
-  path for global Voice Forge quality when online TTS is explicitly acceptable, support the
-  Transformers.js WAV path for offline/confidential rendering, and keep generated audio under
+  `mimir-audio-summary` skill must prefer `kb audio` / `@jcode.labs/mimir-tts`, default to the
+  Transformers.js WAV path for offline/confidential rendering, use the Edge MP3 path for global
+  Voice Forge quality only when online TTS is explicitly acceptable, and keep generated audio under
   ignored local Mimir state.
 - Keep the repository as a simple pnpm workspace monorepo. Add Turbo only if multiple packages or
   apps start needing task caching/orchestration beyond `pnpm --filter`.
@@ -70,6 +70,7 @@ General principles (KISS, DRY, YAGNI, SOLID) as applied in this codebase. Match 
 
 - `packages/mimir` is the core package published as `@jcode.labs/mimir`.
 - `packages/mimir/src/cli.ts` exposes the `kb` CLI.
+- `packages/mimir/src/doctor.ts` owns the user-facing readiness diagnosis behind `kb doctor`.
 - `packages/mimir/src/config.ts` resolves `.kb/config.json` from the target repository.
 - `packages/mimir/src/defaults.ts` owns shared default paths, provider defaults, and generated-state ignore
   constants. Keep config/init/security/gitignore aligned through this module instead of copying

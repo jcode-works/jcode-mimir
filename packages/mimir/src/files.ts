@@ -3,7 +3,10 @@ import { existsSync } from "node:fs"
 import { readFile, stat } from "node:fs/promises"
 import path from "node:path"
 import fg from "fast-glob"
+import { PRIVATE_DIR } from "./defaults.js"
 import type { Config, SourceFile } from "./types.js"
+
+const GENERATED_SOURCE_README = `${PRIVATE_DIR}/README.md`
 
 export const DEFAULT_SUPPORTED_EXTENSIONS = new Set([
   ".atom",
@@ -73,6 +76,11 @@ export async function listSourceFiles(config: Config): Promise<SourceFile[]> {
     })
 
     for (const absolutePath of entries) {
+      const relativePath = path.relative(config.projectRoot, absolutePath)
+      if (relativePath === GENERATED_SOURCE_README) {
+        continue
+      }
+
       const extension = path.extname(absolutePath).toLowerCase()
       if (!supportedExtensions(config).has(extension)) {
         continue
@@ -82,7 +90,7 @@ export async function listSourceFiles(config: Config): Promise<SourceFile[]> {
       const buffer = await readFile(absolutePath)
       files.set(absolutePath, {
         absolutePath,
-        relativePath: path.relative(config.projectRoot, absolutePath),
+        relativePath,
         source: path.relative(root, absolutePath) || path.basename(absolutePath),
         extension,
         bytes: info.size,

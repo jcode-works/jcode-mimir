@@ -19,9 +19,9 @@ built to minimize data movement, but it is not a certified high-assurance system
   default.
 - MCP is read-focused: destructive tools are not exposed over MCP, and MCP retrieval is capped by
   `mcpMaxTopK`.
-- Optional audio summaries use `kb audio` / `@jcode.labs/mimir-tts`. Edge MP3 gives the highest
-  quality when online TTS is acceptable. Transformers.js WAV is the offline/confidential path and
-  does not require Python, ffmpeg, Piper, XTTS, or a local TTS server.
+- Optional audio summaries use `kb audio` / `@jcode.labs/mimir-tts`. Transformers.js WAV is the
+  default offline/confidential path and does not require Python, ffmpeg, Piper, XTTS, or a local TTS
+  server. Edge MP3 gives the highest quality only when online TTS is explicitly acceptable.
 - npm releases are published with provenance from the protected GitHub Actions workflow.
 - Release artifacts include a package tarball, SHA256 checksums, SBOM, and manifest.
 
@@ -140,13 +140,13 @@ Confidentiality defaults:
 - narration text is written to a temp file outside the repository;
 - generated MP3 or WAV audio should be written under `.mimir/audio/`;
 - `.mimir/` is ignored by Git;
-- Edge MP3 uses the online Edge TTS service through the external `edge-tts` CLI and should be used
-  only when sending the narration text to that service is acceptable;
 - Transformers.js WAV does not require Python, ffmpeg, Piper, XTTS, or a local TTS server;
 - the first online-enabled Transformers render may download public model weights into
   `.mimir/models/tts`, but the narration text is processed locally;
 - `--engine transformers --offline` disables remote model loading and requires preloaded model
   files.
+- Edge MP3 uses the online Edge TTS service through the external `edge-tts` CLI and should be used
+  only when sending the narration text to that service is acceptable.
 
 Generated audio can still contain sensitive information. Treat it like a derived confidential
 document.

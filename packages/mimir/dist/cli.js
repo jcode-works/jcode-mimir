@@ -3,6 +3,7 @@ import { Command } from "commander";
 import pc from "picocolors";
 import { loadConfig } from "./config.js";
 import { destroyIndex } from "./destroy.js";
+import { doctor } from "./doctor.js";
 import { audit, ingest } from "./ingest.js";
 import { initProject } from "./init.js";
 import { serveMcp } from "./mcp.js";
@@ -19,6 +20,18 @@ program
     .description("Local-first RAG knowledge base for private project documents.")
     .version(VERSION);
 program
+    .command("doctor")
+    .description("Diagnose setup, index freshness, privacy posture, and next steps.")
+    .option("--json", "Print machine-readable JSON.")
+    .action(async (options) => {
+    const report = await doctor(process.cwd());
+    if (options.json) {
+        console.log(JSON.stringify(report, null, 2));
+        return;
+    }
+    printDoctor(report);
+});
+program
     .command("init")
     .description("Create .kb config files and private/ document folder in the current repository.")
     .action(async () => {
@@ -31,6 +44,12 @@ program
     for (const file of created) {
         console.log(`  - ${file}`);
     }
+    console.log("");
+    console.log(pc.cyan("Next steps:"));
+    console.log("  1. Add supported documents under private/");
+    console.log("  2. Run `pnpm exec kb ingest`");
+    console.log("  3. Run `pnpm exec kb doctor`");
+    console.log('  4. Query with `pnpm exec kb search "your question"`');
 });
 program
     .command("ingest")
@@ -198,9 +217,9 @@ program
     const renderOptions = {
         cwd: process.cwd(),
         textFile,
+        engine: audioEngine(options),
     };
     addOption(renderOptions, "outputPath", options.out);
-    addOption(renderOptions, "engine", audioEngine(options));
     addOption(renderOptions, "model", options.model);
     addOption(renderOptions, "modelPath", options.modelPath);
     addOption(renderOptions, "allowRemoteModels", audioAllowRemoteModels(options));
@@ -236,8 +255,19 @@ program
     console.log(`Skill path: ${result.skillPath}`);
     console.log(`Optional audio skill path: ${result.audioSkillPath}`);
     console.log(`MCP config example: ${result.mcpConfigPath}`);
+    console.log("");
+    console.log("Next steps:");
+    console.log("  1. Add the MCP config from .mimir/mcp.json to your agent if it supports MCP.");
+    console.log("  2. Load .mimir/skills/mimir/ in agents that support skill folders.");
+    console.log("  3. Run `pnpm exec kb doctor` before relying on retrieved context.");
 });
-await program.parseAsync(process.argv);
+try {
+    await program.parseAsync(process.argv);
+}
+catch (error) {
+    console.error(pc.red(error instanceof Error ? error.message : String(error)));
+    process.exitCode = 1;
+}
 function parsePositiveInt(value) {
     const parsed = Number.parseInt(value, 10);
     if (!Number.isInteger(parsed) || parsed <= 0) {
@@ -284,12 +314,39 @@ function audioEngine(options) {
         return "transformers";
     }
     if (options.engine === undefined) {
-        return undefined;
+        if (options.out?.toLowerCase().endsWith(".mp3")) {
+            throw new Error("MP3 output uses online Edge TTS. Re-run with `--engine edge` only when sending narration text to Edge TTS is acceptable.");
+        }
+        return "transformers";
     }
     if (options.engine === "auto" || options.engine === "edge" || options.engine === "transformers") {
         return options.engine;
     }
     throw new Error("Expected --engine to be auto, edge, or transformers.");
+}
+function printDoctor(report) {
+    console.log(`projectRoot=${report.projectRoot}`);
+    console.log(`initialized=${report.initialized}`);
+    console.log(`ready=${report.ready}`);
+    console.log(`embeddingProvider=${report.embeddingProvider}`);
+    console.log(`transformersAllowRemoteModels=${report.transformersAllowRemoteModels}`);
+    console.log(`redactionEnabled=${report.redactionEnabled}`);
+    console.log(`accessLog=${report.accessLog}`);
+    console.log(`supportedFiles=${report.supportedFiles}`);
+    console.log(`indexedFiles=${report.indexedFiles}`);
+    console.log(`chunksIndexed=${report.chunksIndexed}`);
+    console.log(`missingFromIndex=${report.missingFromIndex}`);
+    console.log(`staleInIndex=${report.staleInIndex}`);
+    console.log(`securityWarnings=${report.securityWarnings.length}`);
+    if (report.securityWarnings.length > 0) {
+        for (const warning of report.securityWarnings) {
+            console.log(pc.yellow(`warning: ${warning}`));
+        }
+    }
+    console.log("nextSteps:");
+    for (const step of report.nextSteps) {
+        console.log(`  - ${step}`);
+    }
 }
 function printMaybeJson(value, json) {
     if (json) {

@@ -1,7 +1,7 @@
 export declare const DEFAULT_TTS_MODEL = "Xenova/mms-tts-fra";
 export declare const DEFAULT_TTS_MODEL_PATH = ".mimir/models/tts";
 export declare const DEFAULT_AUDIO_DIR = ".mimir/audio";
-export declare const DEFAULT_TTS_ENGINE = "auto";
+export declare const DEFAULT_TTS_ENGINE = "transformers";
 export declare const DEFAULT_EDGE_VOICE = "fr-FR-DeniseNeural";
 export declare const DEFAULT_EDGE_RATE = "+0%";
 export type TtsEngine = "auto" | "edge" | "transformers";

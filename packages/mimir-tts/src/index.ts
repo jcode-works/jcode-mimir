@@ -7,7 +7,7 @@ import path from "node:path"
 export const DEFAULT_TTS_MODEL = "Xenova/mms-tts-fra"
 export const DEFAULT_TTS_MODEL_PATH = ".mimir/models/tts"
 export const DEFAULT_AUDIO_DIR = ".mimir/audio"
-export const DEFAULT_TTS_ENGINE = "auto"
+export const DEFAULT_TTS_ENGINE = "transformers"
 export const DEFAULT_EDGE_VOICE = "fr-FR-DeniseNeural"
 export const DEFAULT_EDGE_RATE = "+0%"
 
