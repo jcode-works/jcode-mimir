@@ -115,6 +115,25 @@ export interface DestroyIndexResult {
   note: string
 }
 
+export interface DoctorReport {
+  projectRoot: string
+  initialized: boolean
+  rawDir: string
+  storageDir: string
+  embeddingProvider: EmbeddingProvider
+  transformersAllowRemoteModels: boolean
+  redactionEnabled: boolean
+  accessLog: boolean
+  supportedFiles: number
+  indexedFiles: number
+  chunksIndexed: number
+  missingFromIndex: number
+  staleInIndex: number
+  securityWarnings: string[]
+  ready: boolean
+  nextSteps: string[]
+}
+
 export interface SecurityAuditReport {
   projectRoot: string
   zeroTelemetry: true

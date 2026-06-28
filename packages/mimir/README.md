@@ -50,6 +50,17 @@ Suggested GitHub Sponsors tiers:
 
 Early public package. APIs may evolve before `1.0.0`.
 
+## Documentation
+
+- [Getting started](https://github.com/jcode-works/jcode-mimir/blob/main/docs/getting-started.md):
+  install Mimir and complete the first local search.
+- [CLI reference](https://github.com/jcode-works/jcode-mimir/blob/main/docs/cli-reference.md):
+  every `kb` and `mimir-tts` command with practical usage notes.
+- [Troubleshooting](https://github.com/jcode-works/jcode-mimir/blob/main/docs/troubleshooting.md):
+  common install, indexing, retrieval, audio, and release issues.
+- [Security hardening](https://github.com/jcode-works/jcode-mimir/blob/main/SECURITY-HARDENING.md):
+  offline operation, threat model, secure deletion limits, and release verification.
+
 ## What Mimir Is For
 
 - Build a local RAG knowledge base inside any repository.
@@ -144,12 +155,14 @@ Initialize the local project config:
 
 ```bash
 pnpm exec kb init
+pnpm exec kb doctor
 ```
 
 Add private documents under `private/`, then run:
 
 ```bash
 pnpm exec kb ingest
+pnpm exec kb doctor
 pnpm exec kb search "vendor invoice status"
 pnpm exec kb ask "What do the documents prove?"
 pnpm exec kb audit
@@ -161,7 +174,9 @@ With npm, use `npx` after installing the package:
 
 ```bash
 npx kb init
+npx kb doctor
 npx kb ingest
+npx kb doctor
 npx kb search "vendor invoice status"
 npx kb ask "What do the documents prove?"
 npx kb audit
@@ -310,8 +325,8 @@ pnpm exec kb audio /tmp/MIMIR-SUMMARY-project.txt \
 The Edge path uses the online Microsoft Edge TTS service through the `edge-tts` CLI. Use it only
 when sending the narration text to that service is acceptable.
 
-For confidential or air-gapped work, preload Transformers.js-compatible model files and render WAV
-offline:
+By default, `kb audio` uses the Transformers.js WAV path. For confidential or air-gapped work,
+preload Transformers.js-compatible model files and render WAV offline:
 
 ```bash
 pnpm exec kb audio /tmp/MIMIR-SUMMARY-project.txt \

@@ -38,7 +38,7 @@ output in the same commit, or CI fails. This is the single easiest mistake to ma
 - TTS package: **Mimir TTS**, published as `@jcode.labs/mimir-tts`.
 - CLI binary: **`kb`** (`packages/mimir/bin.kb` -> `packages/mimir/dist/cli.js`). Commands: `init`,
   `ingest`, `search`, `ask`, `audit`, `status`, `security-audit`, `destroy-index`, `audio`,
-  `serve-mcp`, `skill-path`, `install-skill`.
+  `doctor`, `serve-mcp`, `skill-path`, `install-skill`.
 - TTS CLI binary: **`mimir-tts`** (`packages/mimir-tts/dist/cli.js`). Commands: `doctor`, `render`.
 - Project config/state in the target repo: **`.kb/`** (`config.json`, `sources.txt`, `access.log`,
   `storage/`), raw documents in **`private/`**, agent kit in **`.mimir/`**.
@@ -63,9 +63,9 @@ The ingest pipeline (`packages/mimir/src/ingest.ts`) chains single-responsibilit
 `embeddings.ts` (vectorize) → `store.ts` (LanceDB). `query.ts` embeds the query and runs vector
 search; `ask` returns cited passages only (no LLM synthesis in core).
 
-`packages/mimir-tts` is a separate ESM package. It uses `edge-tts` for high-quality MP3 when the
-external CLI is installed, and Transformers.js for offline WAV rendering without Python or ffmpeg.
-Core `kb audio` imports it dynamically.
+`packages/mimir-tts` is a separate ESM package. It defaults to Transformers.js for offline WAV
+rendering without Python or ffmpeg, and uses `edge-tts` for high-quality MP3 only when explicitly
+requested. Core `kb audio` imports it dynamically.
 
 Key behaviors to keep in mind before editing:
 

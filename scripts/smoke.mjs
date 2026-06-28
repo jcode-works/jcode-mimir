@@ -12,7 +12,13 @@ const MCP_REQUEST_TIMEOUT_MS = 10_000
 const MCP_CLOSE_TIMEOUT_MS = 2_000
 
 try {
-  await runKb(["init"], tempRoot)
+  const init = await runKb(["init"], tempRoot)
+  assertIncludes(init.stdout, "Next steps:", "init should tell users what to do next")
+
+  const initialDoctor = await runKb(["doctor"], tempRoot)
+  assertIncludes(initialDoctor.stdout, "supportedFiles=0", "doctor should ignore generated README")
+  assertIncludes(initialDoctor.stdout, "nextSteps:", "doctor should print actionable next steps")
+
   await configureProject(tempRoot)
   await writeFixtureDocuments(tempRoot)
 
@@ -38,6 +44,9 @@ try {
   assertIncludes(audit.stdout, "missingFromIndex=0", "audit should find no missing files")
   assertIncludes(audit.stdout, "staleInIndex=0", "audit should find no stale files")
 
+  const doctor = await runKb(["doctor", "--json"], tempRoot)
+  assertIncludes(doctor.stdout, '"ready": true', "doctor should report a ready knowledge base")
+
   const security = await runKb(["security-audit", "--json"], tempRoot)
   assertIncludes(
     security.stdout,
@@ -60,6 +69,21 @@ try {
     audioDoctor.stdout,
     '"outputFormat": "mp3-or-wav"',
     "audio doctor should report MP3 or WAV output",
+  )
+  assertIncludes(
+    audioDoctor.stdout,
+    '"defaultEngine": "transformers"',
+    "audio doctor should default to the offline/confidential engine",
+  )
+
+  const audioMp3WithoutEngine = await runKbFailure(
+    ["audio", path.join(tempRoot, "private", "tax.md"), "--out", ".mimir/audio/tax.mp3"],
+    tempRoot,
+  )
+  assertIncludes(
+    audioMp3WithoutEngine.stderr,
+    "MP3 output uses online Edge TTS",
+    "kb audio should require explicit Edge selection for MP3 output",
   )
 
   await runKb(["install-skill"], tempRoot)
@@ -191,7 +215,11 @@ async function runKb(args, cwd) {
   return runProcess(process.execPath, [cliPath, ...args], cwd)
 }
 
-async function runProcess(command, args, cwd) {
+async function runKbFailure(args, cwd) {
+  return runProcess(process.execPath, [cliPath, ...args], cwd, { expectFailure: true })
+}
+
+async function runProcess(command, args, cwd, options = {}) {
   const child = spawn(command, args, {
     cwd,
     env: process.env,
@@ -211,6 +239,14 @@ async function runProcess(command, args, cwd) {
   })
 
   const result = { stdout: stdout.join(""), stderr: stderr.join("") }
+  if (options.expectFailure) {
+    if (code === 0) {
+      throw new Error(
+        `Command should have failed: ${command} ${args.join(" ")}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`,
+      )
+    }
+    return result
+  }
   if (code !== 0) {
     throw new Error(
       `Command failed: ${command} ${args.join(" ")}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`,

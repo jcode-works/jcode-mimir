@@ -185,10 +185,11 @@ function printHelp(): void {
 
 Usage:
   mimir-tts doctor [--json]
-  mimir-tts render <text-file> [--out output.mp3] [--engine edge]
+  mimir-tts render <text-file> [--out output.wav]
+  mimir-tts render <text-file> --engine edge --out output.mp3
 
 Options:
-  --engine <engine>             auto, edge, or transformers. Auto uses Edge when available.
+  --engine <engine>             transformers, edge, or auto. Default is transformers.
   --model <id>                 Transformers.js TTS model ID.
   --model-path <path>          Local model/cache path. Defaults to .mimir/models/tts.
   --offline                    Force the Transformers.js local/offline WAV path.

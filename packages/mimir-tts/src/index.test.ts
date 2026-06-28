@@ -92,9 +92,9 @@ describe("renderSpeech", () => {
 })
 
 describe("doctor", () => {
-  it("reports Python-free renderers and the global-skill quality default", async () => {
+  it("reports Python-free renderers and the offline default engine", async () => {
     await expect(doctor()).resolves.toMatchObject({
-      defaultEngine: "auto",
+      defaultEngine: "transformers",
       edgeDefaultVoice: "fr-FR-DeniseNeural",
       pythonRequired: false,
       ffmpegRequired: false,

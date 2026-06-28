@@ -24,6 +24,7 @@ describe("listSourceFiles", () => {
     await writeFile(path.join(root, "private", "events.jsonl"), '{"event":"login"}\n', "utf8")
     await writeFile(path.join(root, "private", "schema.sql"), "select 1;\n", "utf8")
     await writeFile(path.join(root, "private", "notes.transcript"), "call notes\n", "utf8")
+    await writeFile(path.join(root, "private", "README.md"), "generated helper\n", "utf8")
     await writeFile(path.join(root, "private", "image.png"), "not indexed\n", "utf8")
     await writeFile(path.join(root, "private", ".kb", "index.md"), "ignored\n", "utf8")
     await writeFile(path.join(root, "private", ".mimir", "agent.md"), "ignored\n", "utf8")

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.2 - 2026-06-29
+
+- Add `kb doctor` to diagnose initialization, index freshness, security posture, and next steps.
+- Make `kb audio` and `mimir-tts` default to the offline/confidential Transformers.js WAV path;
+  Edge MP3 now requires an explicit `--engine edge` command.
+- Stop indexing the generated `private/README.md` helper file created by `kb init`.
+- Improve onboarding output from `kb init` and `kb install-skill`.
+
 ## 0.4.1 - 2026-06-29
 
 - Add an Edge-compatible Mimir TTS engine so `kb audio` can match the global Voice Forge quality

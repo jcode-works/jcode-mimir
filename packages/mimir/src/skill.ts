@@ -97,7 +97,8 @@ ${audioSkillPath}
 \`\`\`
 
 Use it only when the user asks for a listenable summary. It renders generated audio under ignored
-local Mimir state by default and prefers offline TTS engines for confidential content.
+local Mimir state by default. Use Transformers.js WAV for confidential content and Edge MP3 only
+when online TTS is explicitly acceptable.
 
 ## MCP
 
@@ -111,6 +112,12 @@ Use the MCP server when your agent supports MCP tools. The server command is:
 
 \`\`\`bash
 pnpm exec kb serve-mcp
+\`\`\`
+
+Before relying on retrieved context, run:
+
+\`\`\`bash
+pnpm exec kb doctor
 \`\`\`
 
 `

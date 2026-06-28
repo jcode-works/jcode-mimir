@@ -18,9 +18,9 @@ The knowledge base stays local; the final audio is a generated artifact and must
 - Treat the source documents, retrieved passages, generated narration, and final audio as sensitive.
 - Do not use online TTS for confidential content unless the user explicitly allows it.
 - Prefer `pnpm exec kb audio` or `pnpm exec mimir-tts render` for plug-and-play output.
-- Use `--engine edge` only when online TTS is acceptable and global Voice Forge quality is required.
 - Use `--engine transformers --offline` when model files are already present and remote model
   loading is not allowed.
+- Use `--engine edge` only when online TTS is acceptable and global Voice Forge quality is required.
 - Write the narration text to a temp file outside the repository, such as `/tmp/MIMIR-SUMMARY-topic.txt`.
 - Render audio under `.mimir/audio/` by default. This directory is ignored by Git when Mimir is installed.
 - Never stage or commit generated audio, temporary text, WAV, AIFF, or intermediate files.

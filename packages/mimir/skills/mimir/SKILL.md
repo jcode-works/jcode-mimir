@@ -39,6 +39,7 @@ private/          # raw documents to ingest
 From the repository root:
 
 ```bash
+pnpm exec kb doctor
 pnpm exec kb status
 pnpm exec kb security-audit
 ```
@@ -91,13 +92,15 @@ After documents are added or changed:
 
 ```bash
 pnpm exec kb ingest
+pnpm exec kb doctor
 pnpm exec kb audit
 pnpm exec kb security-audit
 pnpm exec kb status
 ```
 
-The audit must show no missing or stale supported files before relying on the index. The security
-audit should not show warnings before relying on Mimir for sensitive work.
+`kb doctor` should show `ready=true` before relying on the index. The audit must show no missing or
+stale supported files, and the security audit should not show warnings before relying on Mimir for
+sensitive work.
 
 ## Query Workflow
 
