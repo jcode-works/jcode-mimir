@@ -1,5 +1,11 @@
-import { Badge, Button, Card, CardContent } from "@jcode.labs/mimir-ui"
+import { Badge, Button, Card, CardContent, Input } from "@jcode.labs/mimir-ui"
 import { ArrowRight, FileSearch, HardDrive, LockKeyhole, MonitorDown } from "lucide-react"
+
+const configuredWaitlistEndpoint = import.meta.env.PUBLIC_MIMIR_WAITLIST_ENDPOINT
+const waitlistEndpoint =
+  typeof configuredWaitlistEndpoint === "string" && configuredWaitlistEndpoint.length > 0
+    ? configuredWaitlistEndpoint
+    : "/api/waitlist"
 
 const proofPoints = [
   {
@@ -115,12 +121,43 @@ export function LandingHero(): React.JSX.Element {
       </section>
 
       <section id="waitlist" className="mx-auto max-w-7xl px-5 py-14 md:px-8">
-        <div className="rounded-lg border border-border bg-primary p-6 text-primary-foreground md:p-8">
-          <h2 className="text-3xl font-black">Build the private document layer once.</h2>
-          <p className="mt-3 max-w-2xl text-primary-foreground/80">
-            The landing intentionally stays static and telemetry-free. Email capture will be added
-            through a Cloudflare Worker when launch validation starts.
-          </p>
+        <div className="grid gap-6 rounded-lg border border-border bg-primary p-6 text-primary-foreground md:grid-cols-[1fr_26rem] md:p-8">
+          <div>
+            <h2 className="text-3xl font-black">Build the private document layer once.</h2>
+            <p className="mt-3 max-w-2xl text-primary-foreground/80">
+              Early access is handled by a Cloudflare Worker endpoint under JCode control. No
+              product analytics are required for the waitlist.
+            </p>
+          </div>
+
+          <form action={waitlistEndpoint} method="post" className="grid gap-3" id="mimir-waitlist">
+            <label className="sr-only" htmlFor="waitlist-email">
+              Email
+            </label>
+            <Input
+              id="waitlist-email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              required
+            />
+            <label className="sr-only" htmlFor="waitlist-context">
+              Context
+            </label>
+            <Input
+              id="waitlist-context"
+              name="context"
+              type="text"
+              placeholder="Consultant, agency, internal tools..."
+            />
+            <input type="hidden" name="source" value="mimir-landing" />
+            <input className="hidden" name="website" tabIndex={-1} autoComplete="off" />
+            <Button type="submit" variant="secondary">
+              Join waitlist
+              <ArrowRight aria-hidden="true" />
+            </Button>
+          </form>
         </div>
       </section>
     </main>
