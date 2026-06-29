@@ -1,8 +1,9 @@
+import { existsSync } from "node:fs"
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
-import { installSkill } from "./skill.js"
+import { installAgentSkills, installSkill, parseAgentTargets } from "./skill.js"
 
 const tempDirs: string[] = []
 
@@ -29,7 +30,24 @@ describe("installSkill", () => {
       command: string
       args: string[]
     }
+    const kimiConfig = JSON.parse(await readFile(result.kimiConfigPath, "utf8")) as {
+      mcpServers: { mimir: { env: { MIMIR_PROJECT_ROOT: string } } }
+    }
+    const opencodeConfig = JSON.parse(await readFile(result.opencodeConfigPath, "utf8")) as {
+      mcp: {
+        mimir: {
+          type: string
+          command: string[]
+          enabled: boolean
+          environment: { MIMIR_PROJECT_ROOT: string }
+        }
+      }
+    }
+    const clineConfig = JSON.parse(await readFile(result.clineConfigPath, "utf8")) as {
+      mcpServers: { mimir: { env: { MIMIR_PROJECT_ROOT: string } } }
+    }
     const codexConfig = await readFile(result.codexConfigPath, "utf8")
+    const agentSetup = await readFile(result.agentSetupPath, "utf8")
 
     expect(skill).toContain("name: mimir")
     expect(audioSkill).toContain("name: mimir-audio-summary")
@@ -46,6 +64,20 @@ describe("installSkill", () => {
     expect(codexConfig).toContain('command = "pnpm"')
     expect(codexConfig).toContain('args = ["exec", "kb", "serve-mcp"]')
     expect(codexConfig).toContain(`cwd = ${JSON.stringify(root)}`)
+    expect(codexConfig).toContain("[[skills.config]]")
+    expect(codexConfig).toContain(path.join(root, ".mimir", "skills", "mimir"))
+    expect(kimiConfig.mcpServers.mimir.env.MIMIR_PROJECT_ROOT).toBe(root)
+    expect(opencodeConfig.mcp.mimir).toEqual({
+      type: "local",
+      command: ["pnpm", "exec", "kb", "serve-mcp"],
+      enabled: true,
+      environment: { MIMIR_PROJECT_ROOT: root },
+    })
+    expect(clineConfig.mcpServers.mimir.env.MIMIR_PROJECT_ROOT).toBe(root)
+    expect(agentSetup).toContain("Claude Code")
+    expect(agentSetup).toContain("Kimi Code CLI")
+    expect(agentSetup).toContain("OpenCode")
+    expect(agentSetup).toContain("Cline")
   })
 
   it("adds Mimir runtime folders to gitignore without duplicating entries", async () => {
@@ -62,6 +94,10 @@ describe("installSkill", () => {
     expect(first.written).toContain(path.join(".mimir", "skills", "mimir-markdown-report"))
     expect(first.written).toContain(path.join(".mimir", "claude-mcp-server.json"))
     expect(first.written).toContain(path.join(".mimir", "codex-mcp.toml"))
+    expect(first.written).toContain(path.join(".mimir", "kimi-mcp.json"))
+    expect(first.written).toContain(path.join(".mimir", "opencode.jsonc"))
+    expect(first.written).toContain(path.join(".mimir", "cline-mcp.json"))
+    expect(first.written).toContain(path.join(".mimir", "agent-setup.md"))
     expect(gitignore.match(/^\.kb\/$/gm)).toHaveLength(1)
     expect(gitignore.match(/^\.mimir\/$/gm)).toHaveLength(1)
   })
@@ -83,5 +119,47 @@ describe("installSkill", () => {
     expect(codexConfig).toContain('command = "npx"')
     expect(codexConfig).toContain('args = ["kb", "serve-mcp"]')
     expect(readme).toContain("npx kb serve-mcp")
+  })
+})
+
+describe("installAgentSkills", () => {
+  it("copies selected skills into native project-scope agent folders", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "mimir-agent-"))
+    tempDirs.push(root)
+
+    const result = await installAgentSkills({
+      cwd: root,
+      agents: parseAgentTargets("claude,kimi"),
+      scope: "project",
+    })
+
+    expect(result.installations.map((installation) => installation.agent)).toEqual([
+      "claude",
+      "kimi",
+    ])
+    expect(existsSync(path.join(root, ".claude", "skills", "mimir", "SKILL.md"))).toBe(true)
+    expect(existsSync(path.join(root, ".kimi", "skills", "mimir", "SKILL.md"))).toBe(true)
+    expect(existsSync(path.join(root, ".codex", "skills", "mimir", "SKILL.md"))).toBe(false)
+    expect(result.written).toContain(path.join(".claude", "skills", "mimir"))
+    expect(result.written).toContain(path.join(".kimi", "skills", "mimir-markdown-report"))
+  })
+
+  it("uses user-scope directories and environment overrides", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "mimir-agent-"))
+    const home = await mkdtemp(path.join(os.tmpdir(), "mimir-home-"))
+    tempDirs.push(root, home)
+
+    const result = await installAgentSkills({
+      cwd: root,
+      agents: ["opencode"],
+      scope: "user",
+      homeDir: home,
+      env: { OPENCODE_SKILLS_DIR: "~/custom-opencode-skills" },
+    })
+
+    const targetDir = path.join(home, "custom-opencode-skills")
+    expect(result.installations[0]?.targetDir).toBe(targetDir)
+    expect(existsSync(path.join(targetDir, "mimir", "SKILL.md"))).toBe(true)
+    expect(result.written).toContain(path.join(targetDir, "mimir"))
   })
 })

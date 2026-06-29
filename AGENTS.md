@@ -8,6 +8,8 @@
   environment files, or generated vector stores.
 - Keep public branding centered on `Mimir`. Use JCode Labs and Jean-Baptiste Thery for
   package scope, repository ownership, and copyright, not as the product name.
+- Use `Mimir Core` only for the technical core package `@jcode.labs/mimir` and developer-facing
+  package metadata. User-facing product copy remains `Mimir`; companion packages are Mimir add-ons.
 - The package is open source under the MIT License unless the user explicitly changes it.
 - This package must stay reusable across repositories. Resolve project data from the
   caller's working directory or explicit config, not from the package installation path.
@@ -104,8 +106,12 @@ General principles (KISS, DRY, YAGNI, SOLID) as applied in this codebase. Match 
 - `packages/mimir/skills/mimir-markdown-report/SKILL.md` is the optional bundled Markdown-report
   skill.
 - `kb setup` must keep generating agent-specific MCP helpers for easy local use:
-  `.mimir/claude-mcp-server.json` for `claude mcp add-json` and `.mimir/codex-mcp.toml` for Codex
-  config layers.
+  `.mimir/claude-mcp-server.json` for `claude mcp add-json`, `.mimir/codex-mcp.toml` for Codex
+  config layers, `.mimir/kimi-mcp.json` for Kimi, `.mimir/opencode.jsonc` for OpenCode, and
+  `.mimir/cline-mcp.json` for Cline.
+- `kb install-agent` owns native skill discovery for the main supported coding agents. Keep
+  `--agents claude|codex|kimi|opencode|cline` targeted so a user can install only the agent they use,
+  with project scope by default and user scope available through `--scope user`.
 - `packages/mimir/examples/sovereign-rag-demo` is the tracked synthetic test workspace for manual
   and package validation.
 - `.kb/`, `.mimir/`, and project `private/` folders are local user data or generated agent

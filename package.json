@@ -1,8 +1,8 @@
 {
   "name": "jcode-mimir",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "private": true,
-  "description": "Monorepo for the Mimir open-source local RAG packages.",
+  "description": "Monorepo for Mimir Core and open-source Mimir add-ons.",
   "type": "module",
   "license": "MIT",
   "packageManager": "pnpm@11.9.0",

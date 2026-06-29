@@ -86,8 +86,8 @@ function nextActions(input) {
         steps.push(`Run \`${input.run(["search", '"your question"'])}\` to retrieve source passages.`);
         steps.push(`Run \`${input.run(["ask", '"your question"'])}\` to produce cited retrieval context.`);
         if (input.agentKitInstalled) {
-            steps.push("Connect Claude Code with .mimir/claude-mcp-server.json, Codex with .mimir/codex-mcp.toml, or another AI with .mimir/mcp.json.");
-            steps.push("Load .mimir/skills/mimir/ in agents that support skill folders.");
+            steps.push("Run `kb install-agent --agents claude` or another targeted agent list for native skill discovery.");
+            steps.push("Wire the matching MCP helper from .mimir/ when the agent should call Mimir tools directly.");
         }
         else {
             steps.push(`Run \`${input.run(["install-skill"])}\` if an AI agent should use the local knowledge base.`);
@@ -101,6 +101,10 @@ function isAgentKitInstalled(projectRoot) {
         existsSync(path.join(projectRoot, MIMIR_DIR, "skills", "mimir-markdown-report", "SKILL.md")) &&
         existsSync(path.join(projectRoot, MIMIR_DIR, "mcp.json")) &&
         existsSync(path.join(projectRoot, MIMIR_DIR, "claude-mcp-server.json")) &&
-        existsSync(path.join(projectRoot, MIMIR_DIR, "codex-mcp.toml")));
+        existsSync(path.join(projectRoot, MIMIR_DIR, "codex-mcp.toml")) &&
+        existsSync(path.join(projectRoot, MIMIR_DIR, "kimi-mcp.json")) &&
+        existsSync(path.join(projectRoot, MIMIR_DIR, "opencode.jsonc")) &&
+        existsSync(path.join(projectRoot, MIMIR_DIR, "cline-mcp.json")) &&
+        existsSync(path.join(projectRoot, MIMIR_DIR, "agent-setup.md")));
 }
 //# sourceMappingURL=doctor.js.map

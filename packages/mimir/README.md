@@ -1,6 +1,6 @@
 # Mimir Core Package
 
-`@jcode.labs/mimir` is the core package for Mimir, an open-source sovereign local RAG toolkit for
+`@jcode.labs/mimir` is Mimir Core, the technical core package for Mimir, an open-source sovereign local RAG toolkit for
 confidential datasets and AI agents.
 
 **Full documentation:** https://github.com/jcode-works/jcode-mimir#readme
@@ -59,9 +59,10 @@ Run `pnpm exec kb doctor --fix` later to repair missing setup or rebuild stale i
 
 ## Claude Code And Codex
 
-After `pnpm exec kb setup`, use `.mimir/claude-mcp-server.json` with `claude mcp add-json`, or copy
-`.mimir/codex-mcp.toml` into a trusted Codex config layer. See the canonical GitHub README for the
-full agent demo.
+After `pnpm exec kb setup`, use `pnpm exec kb install-agent --agents claude`, `--agents kimi`, or a
+comma-separated list for native agent skill discovery. Mimir Core also generates MCP helpers for
+Claude Code, Codex, Kimi, OpenCode, and Cline under `.mimir/`. See the canonical GitHub README for
+the full agent demo.
 
 ## License
 

@@ -133,6 +133,26 @@ try {
   assertIncludes(gitignore, ".kb/", "init should ignore the Mimir config and index directory")
   assertIncludes(gitignore, ".mimir/", "install-skill should ignore generated agent kit files")
 
+  await runKb(["install-agent", "--agents", "claude,kimi"], tempRoot)
+  const claudeNativeSkill = await readFile(
+    path.join(tempRoot, ".claude", "skills", "mimir", "SKILL.md"),
+    "utf8",
+  )
+  const kimiNativeSkill = await readFile(
+    path.join(tempRoot, ".kimi", "skills", "mimir", "SKILL.md"),
+    "utf8",
+  )
+  assertIncludes(
+    claudeNativeSkill,
+    "name: mimir",
+    "install-agent should install the Claude project skill",
+  )
+  assertIncludes(
+    kimiNativeSkill,
+    "name: mimir",
+    "install-agent should install the Kimi project skill",
+  )
+
   await smokeMcp(tempRoot)
   await smokeExampleWorkspace()
 

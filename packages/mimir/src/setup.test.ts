@@ -43,10 +43,10 @@ describe("setupProject", () => {
     expect(second.ingested?.indexedFiles).toBe(1)
     expect(second.doctor.ready).toBe(true)
     expect(second.doctor.nextSteps).toContain(
-      "Connect Claude Code with .mimir/claude-mcp-server.json, Codex with .mimir/codex-mcp.toml, or another AI with .mimir/mcp.json.",
+      "Run `kb install-agent --agents claude` or another targeted agent list for native skill discovery.",
     )
     expect(second.nextSteps).toContain(
-      "Connect Claude Code with .mimir/claude-mcp-server.json, Codex with .mimir/codex-mcp.toml, or another AI with .mimir/mcp.json.",
+      "Run `kb install-agent --agents claude` or another targeted agent list for native skill discovery.",
     )
   })
 })

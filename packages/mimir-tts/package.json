@@ -1,7 +1,7 @@
 {
   "name": "@jcode.labs/mimir-tts",
-  "version": "0.4.8",
-  "description": "Plug-and-play Edge-quality and offline text-to-speech for Mimir audio summaries.",
+  "version": "0.4.9",
+  "description": "Mimir add-on for plug-and-play Edge-quality and offline text-to-speech audio summaries.",
   "type": "module",
   "license": "MIT",
   "author": {

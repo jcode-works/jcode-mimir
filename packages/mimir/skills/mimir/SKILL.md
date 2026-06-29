@@ -1,6 +1,6 @@
 ---
 name: mimir
-description: Use this skill whenever a repository uses or should use Mimir, local-first RAG, private project knowledge, document ingestion, knowledge-base audit, or MCP access to project documents. Use it before answering from memory when the user asks about facts that may be present in private files, asks to ingest/query/audit documents, or wants Claude, Codex, Cursor, or another AI agent to use the same local knowledge base.
+description: Use this skill whenever a repository uses or should use Mimir, local-first RAG, private project knowledge, document ingestion, knowledge-base audit, or MCP access to project documents. Use it before answering from memory when the user asks about facts that may be present in private files, asks to ingest/query/audit documents, or wants Claude Code, Codex, Kimi, OpenCode, Cline, or another AI agent to use the same local knowledge base.
 ---
 
 # Mimir
@@ -169,7 +169,17 @@ claude mcp add-json --scope local mimir "$(cat .mimir/claude-mcp-server.json)"
 ```
 
 For Codex, copy `.mimir/codex-mcp.toml` into `~/.codex/config.toml` or another trusted Codex config
-layer.
+layer. It includes both the Mimir MCP server and `skills.config` entries.
+
+For Kimi Code CLI, run from the target repository root:
+
+```bash
+kimi --mcp-config-file .mimir/kimi-mcp.json
+```
+
+For OpenCode, merge `.mimir/opencode.jsonc` into the OpenCode config layer used by the project.
+
+For Cline, add `.mimir/cline-mcp.json` under `mcpServers` in Cline's MCP configuration.
 
 For other MCP clients that cannot set `cwd`, set `MIMIR_PROJECT_ROOT=/absolute/path/to/repository`
 when launching `kb serve-mcp`.
@@ -236,11 +246,26 @@ This creates:
 .mimir/mcp.json
 .mimir/claude-mcp-server.json
 .mimir/codex-mcp.toml
+.mimir/kimi-mcp.json
+.mimir/opencode.jsonc
+.mimir/cline-mcp.json
+.mimir/agent-setup.md
 .mimir/README.md
 ```
 
-Agents that understand skill folders can load `.mimir/skills/mimir/`. Other agents can read
-`.mimir/README.md` and `.mimir/mcp.json`.
+For native discovery, install only the agent the user uses:
+
+```bash
+pnpm exec kb install-agent --agents claude
+pnpm exec kb install-agent --agents kimi
+pnpm exec kb install-agent --agents claude,codex,kimi,opencode,cline
+```
+
+By default this writes project-scope skill folders such as `.claude/skills/`, `.kimi/skills/`,
+`.opencode/skills/`, or `.cline/skills/`. Add `--scope user` for global installs.
+
+Agents that understand skill folders can load `.mimir/skills/mimir/` directly when native discovery
+is not installed. Other agents can read `.mimir/README.md` and `.mimir/mcp.json`.
 
 ## Answer Style
 
