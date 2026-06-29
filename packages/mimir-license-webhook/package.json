@@ -7,10 +7,12 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "cf:dry-run": "pnpm build && wrangler deploy --dry-run",
     "check": "tsc -p tsconfig.json --noEmit",
     "smoke": "pnpm build && node scripts/smoke.mjs"
   },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "^4.105.0"
   }
 }

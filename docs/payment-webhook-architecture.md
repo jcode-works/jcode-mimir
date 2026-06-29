@@ -108,6 +108,7 @@ The package has a synthetic smoke test with generated local keys and no provider
 
 ```bash
 pnpm --filter @jcode.labs/mimir-license-webhook smoke
+pnpm --filter @jcode.labs/mimir-license-webhook cf:dry-run
 ```
 
 This package is not a deployment target yet. Keep `LEMONSQUEEZY_WEBHOOK_SECRET`,
