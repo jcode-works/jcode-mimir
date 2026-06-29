@@ -39,8 +39,8 @@ function setupNextSteps(report) {
     if (report.ready) {
         return [
             "Ask questions with the search or ask command shown by `kb doctor`.",
-            "Connect Claude Code with .mimir/claude-mcp-server.json, Codex with .mimir/codex-mcp.toml, or another AI with .mimir/mcp.json.",
-            "Load .mimir/skills/mimir/ in agents that support skill folders.",
+            "Run `kb install-agent --agents claude` or another targeted agent list for native skill discovery.",
+            "Wire the matching MCP helper from .mimir/ when the agent should call Mimir tools directly.",
         ];
     }
     return report.nextSteps;

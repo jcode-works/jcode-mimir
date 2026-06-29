@@ -11,7 +11,14 @@ import { kbCommand } from "./package-manager.js"
 import { ask, search } from "./query.js"
 import { securityAudit } from "./security.js"
 import { setupProject } from "./setup.js"
-import { bundledSkillPath, installSkill } from "./skill.js"
+import {
+  type AgentInstallScope,
+  bundledSkillPath,
+  installAgentSkills,
+  installSkill,
+  parseAgentTargets,
+  SUPPORTED_AGENT_TARGETS,
+} from "./skill.js"
 import { countRows } from "./store.js"
 import { VERSION } from "./version.js"
 
@@ -365,14 +372,54 @@ program
     console.log(`Optional Markdown report skill path: ${result.reportSkillPath}`)
     console.log(`MCP config example: ${result.mcpConfigPath}`)
     console.log(`Claude Code MCP server JSON: ${result.claudeConfigPath}`)
-    console.log(`Codex MCP TOML snippet: ${result.codexConfigPath}`)
+    console.log(`Codex config TOML snippet: ${result.codexConfigPath}`)
+    console.log(`Kimi MCP config JSON: ${result.kimiConfigPath}`)
+    console.log(`OpenCode config JSONC: ${result.opencodeConfigPath}`)
+    console.log(`Cline MCP config JSON: ${result.clineConfigPath}`)
+    console.log(`Agent setup guide: ${result.agentSetupPath}`)
     console.log("")
     console.log("Next steps:")
-    console.log(
-      "  1. Add the MCP config from .mimir/ to Claude Code, Codex, or another MCP client.",
-    )
-    console.log("  2. Load .mimir/skills/mimir/ in agents that support skill folders.")
+    console.log("  1. Run `kb install-agent --agents claude` or another targeted agent list.")
+    console.log("  2. Add the MCP config from .mimir/ to the same agent when MCP tools are needed.")
     console.log(`  3. Run \`${doctorCommand.display}\` before relying on retrieved context.`)
+  })
+
+program
+  .command("install-agent")
+  .description("Install Mimir skills into native Claude, Codex, Kimi, OpenCode, or Cline folders.")
+  .option(
+    "--agents <list>",
+    `Comma-separated agents: all, ${SUPPORTED_AGENT_TARGETS.join(", ")}.`,
+    "all",
+  )
+  .option("--scope <scope>", "Install scope: project or user.", "project")
+  .option("--json", "Print machine-readable JSON.")
+  .action(async (options: { agents: string; scope: string; json?: boolean }) => {
+    const scope = parseAgentInstallScope(options.scope)
+    const agents = parseAgentTargets(options.agents)
+    const result = await installAgentSkills({ cwd: process.cwd(), agents, scope })
+    if (options.json) {
+      console.log(JSON.stringify(result, null, 2))
+      return
+    }
+
+    console.log(`Installed Mimir skills for ${scope}-scope agent discovery:`)
+    for (const installation of result.installations) {
+      console.log(`  - ${installation.label}: ${installation.targetDir}`)
+    }
+    console.log("")
+    console.log("MCP helper files:")
+    console.log(`  - generic: ${result.projectKit.mcpConfigPath}`)
+    console.log(`  - Claude Code: ${result.projectKit.claudeConfigPath}`)
+    console.log(`  - Codex: ${result.projectKit.codexConfigPath}`)
+    console.log(`  - Kimi: ${result.projectKit.kimiConfigPath}`)
+    console.log(`  - OpenCode: ${result.projectKit.opencodeConfigPath}`)
+    console.log(`  - Cline: ${result.projectKit.clineConfigPath}`)
+    console.log("")
+    console.log("Next steps:")
+    console.log("  1. Restart or reload the selected agent so it discovers the new SKILL.md files.")
+    console.log("  2. Wire the matching MCP helper if the agent should call Mimir tools directly.")
+    console.log(`  3. Run \`${(await kbCommand(process.cwd(), ["doctor"])).display}\`.`)
   })
 
 try {
@@ -483,6 +530,13 @@ function audioEngine(options: AudioOptions): TtsRenderOptions["engine"] {
   throw new Error("Expected --engine to be auto, edge, or transformers.")
 }
 
+function parseAgentInstallScope(value: string | undefined): AgentInstallScope {
+  if (value === "project" || value === "user") {
+    return value
+  }
+  throw new Error("Expected --scope to be project or user.")
+}
+
 function printDoctor(report: Awaited<ReturnType<typeof doctor>>): void {
   console.log(`projectRoot=${report.projectRoot}`)
   console.log(`initialized=${report.initialized}`)
@@ -534,7 +588,11 @@ function printSetup(result: Awaited<ReturnType<typeof setupProject>>, title: str
   console.log(`  - report skill: ${result.agentKit.reportSkillPath}`)
   console.log(`  - MCP config: ${result.agentKit.mcpConfigPath}`)
   console.log(`  - Claude Code MCP JSON: ${result.agentKit.claudeConfigPath}`)
-  console.log(`  - Codex MCP TOML: ${result.agentKit.codexConfigPath}`)
+  console.log(`  - Codex config TOML: ${result.agentKit.codexConfigPath}`)
+  console.log(`  - Kimi MCP JSON: ${result.agentKit.kimiConfigPath}`)
+  console.log(`  - OpenCode JSONC: ${result.agentKit.opencodeConfigPath}`)
+  console.log(`  - Cline MCP JSON: ${result.agentKit.clineConfigPath}`)
+  console.log(`  - agent setup guide: ${result.agentKit.agentSetupPath}`)
   console.log("")
   console.log(pc.cyan("Index:"))
   if (result.ingested) {

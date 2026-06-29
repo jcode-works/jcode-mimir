@@ -1,6 +1,6 @@
-# Mimir TTS Package
+# Mimir TTS Add-On
 
-`@jcode.labs/mimir-tts` is the standalone text-to-speech package used by Mimir audio summaries.
+`@jcode.labs/mimir-tts` is the standalone text-to-speech add-on used by Mimir audio summaries.
 It gives Mimir a plug-and-play narration renderer without making audio generation part of the core
 RAG pipeline.
 

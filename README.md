@@ -12,7 +12,7 @@ installed in any Node.js repository. It indexes local files from the target repo
 vectors locally with LanceDB, and can use either built-in local-hash retrieval or optional
 Transformers.js semantic embeddings.
 
-Mimir core returns cited retrieval context. Answer synthesis belongs to the AI agent, LLM, or local
+Mimir Core returns cited retrieval context. Answer synthesis belongs to the AI agent, LLM, or local
 model runtime you choose around it.
 
 Created by Jean-Baptiste Thery and published under the JCode Labs npm scope.
@@ -25,8 +25,8 @@ This root README is the canonical product documentation for the public npm packa
 
 | Package | Role |
 | --- | --- |
-| `@jcode.labs/mimir` | Core CLI, library, MCP server, bundled agent skills, and synthetic examples. |
-| `@jcode.labs/mimir-tts` | Plug-and-play Edge-quality MP3 and offline Transformers.js WAV renderer used by `kb audio`. |
+| `@jcode.labs/mimir` | Mimir Core: CLI, library, MCP server, bundled agent skills, and synthetic examples. |
+| `@jcode.labs/mimir-tts` | Mimir add-on for Edge-quality MP3 and offline Transformers.js WAV rendering through `kb audio`. |
 
 The package README files are intentionally short because npm displays each package README
 separately. They point npm readers back to this GitHub documentation.
@@ -150,7 +150,11 @@ private/                         # raw documents to ingest
 .mimir/skills/mimir-markdown-report/SKILL.md
 .mimir/mcp.json                  # generic MCP server config snippet
 .mimir/claude-mcp-server.json    # Claude Code add-json payload
-.mimir/codex-mcp.toml            # Codex config.toml snippet
+.mimir/codex-mcp.toml            # Codex config.toml snippet with MCP and skills.config
+.mimir/kimi-mcp.json             # Kimi Code CLI MCP config
+.mimir/opencode.jsonc            # OpenCode config snippet
+.mimir/cline-mcp.json            # Cline MCP config
+.mimir/agent-setup.md            # agent-specific setup guide
 .gitignore                       # ignores private/**, .kb/, and .mimir/
 ```
 
@@ -303,6 +307,10 @@ This creates:
 .mimir/mcp.json
 .mimir/claude-mcp-server.json
 .mimir/codex-mcp.toml
+.mimir/kimi-mcp.json
+.mimir/opencode.jsonc
+.mimir/cline-mcp.json
+.mimir/agent-setup.md
 .mimir/README.md
 ```
 
@@ -311,6 +319,25 @@ Agents that support skill folders can load `.mimir/skills/mimir/` for deep local
 `.mimir/skills/mimir-markdown-report/` when the user asks for a cited Markdown report, dossier,
 audit memo, or planning note. Other agents can read the generated `.mimir/README.md` and use the MCP
 config snippet.
+
+For native discovery in a specific agent, install only the agent you use:
+
+```bash
+pnpm exec kb install-agent --agents claude
+pnpm exec kb install-agent --agents kimi
+pnpm exec kb install-agent --agents claude,codex,kimi,opencode,cline
+```
+
+By default, `install-agent` writes project-scope skill folders. Add `--scope user` for global
+installations.
+
+| Agent | Project skill directory | Main MCP helper |
+| --- | --- | --- |
+| Claude Code | `.claude/skills/` | `.mimir/claude-mcp-server.json` |
+| Codex | `.codex/skills/` plus `skills.config` | `.mimir/codex-mcp.toml` |
+| Kimi Code CLI | `.kimi/skills/` | `.mimir/kimi-mcp.json` |
+| OpenCode | `.opencode/skills/` | `.mimir/opencode.jsonc` |
+| Cline | `.cline/skills/` | `.mimir/cline-mcp.json` |
 
 Start the MCP server from the repository root:
 
@@ -336,6 +363,7 @@ From the target repository root:
 
 ```bash
 pnpm exec kb setup
+pnpm exec kb install-agent --agents claude
 claude mcp add-json --scope local mimir "$(cat .mimir/claude-mcp-server.json)"
 ```
 
@@ -350,11 +378,51 @@ From the target repository root:
 
 ```bash
 pnpm exec kb setup
+pnpm exec kb install-agent --agents codex
 cat .mimir/codex-mcp.toml
 ```
 
 Copy the printed TOML into `~/.codex/config.toml` or another trusted Codex config layer. The snippet
-contains the repository `cwd`, so Codex can launch the Mimir MCP server from the right project.
+contains the repository `cwd`, the Mimir MCP server, and `skills.config` entries for the bundled
+skills.
+
+### Kimi Code CLI
+
+From the target repository root:
+
+```bash
+pnpm exec kb setup
+pnpm exec kb install-agent --agents kimi
+kimi --mcp-config-file .mimir/kimi-mcp.json
+```
+
+Kimi can discover project skills from `.kimi/skills/`. The MCP config can also be installed in
+Kimi's global MCP file if you intentionally want a global setup.
+
+### OpenCode
+
+From the target repository root:
+
+```bash
+pnpm exec kb setup
+pnpm exec kb install-agent --agents opencode
+cat .mimir/opencode.jsonc
+```
+
+Copy or merge the generated snippet into the OpenCode config layer you use for the project.
+
+### Cline
+
+From the target repository root:
+
+```bash
+pnpm exec kb setup
+pnpm exec kb install-agent --agents cline
+cat .mimir/cline-mcp.json
+```
+
+Cline can discover project skills from `.cline/skills/`. Add the generated MCP JSON under
+`mcpServers` in Cline's MCP configuration when tool access is needed.
 
 For other MCP clients that cannot set `cwd`, set `MIMIR_PROJECT_ROOT=/absolute/path/to/repository`
 when launching `kb serve-mcp`.
