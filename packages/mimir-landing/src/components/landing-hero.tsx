@@ -56,8 +56,6 @@ interface AgentStep {
   commands?: InstallCommand[]
 }
 
-type ProductTab = "library" | "agents" | "desktop"
-
 export function LandingHero({
   alternateLocales,
   locale,
@@ -70,24 +68,12 @@ export function LandingHero({
 }: LandingHeroProps): React.JSX.Element {
   const t = (key: string): string => translations[key] ?? key
   const [hasScrolled, setHasScrolled] = useState(false)
-  const [activeProductTab, setActiveProductTab] = useState<ProductTab>("library")
 
   useEffect(() => {
     const handleScroll = () => setHasScrolled(window.scrollY > 12)
     handleScroll()
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
-
-  useEffect(() => {
-    const syncTabFromHash = () => {
-      const productTab = productTabFromHash(window.location.hash)
-      if (productTab) setActiveProductTab(productTab)
-    }
-
-    syncTabFromHash()
-    window.addEventListener("hashchange", syncTabFromHash)
-    return () => window.removeEventListener("hashchange", syncTabFromHash)
   }, [])
 
   const proofPoints = [
@@ -229,10 +215,6 @@ export function LandingHero({
     rel: "noopener noreferrer",
   } as const
 
-  function handleProductTabChange(value: string) {
-    if (isProductTab(value)) setActiveProductTab(value)
-  }
-
   return (
     <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
       <MimirBackground height="100dvh" className="inset-0 min-h-[110dvh]" behindContent={false} />
@@ -256,28 +238,16 @@ export function LandingHero({
             <a className="transition hover:text-foreground" href={localizedHomeUrl}>
               {t("nav_home")}
             </a>
-            <a
-              className="transition hover:text-foreground"
-              href={localizedLibraryUrl}
-              onClick={() => setActiveProductTab("library")}
-            >
+            <a className="transition hover:text-foreground" href={localizedLibraryUrl}>
               {t("nav_library")}
             </a>
-            <a
-              className="transition hover:text-foreground"
-              href={localizedAgentsUrl}
-              onClick={() => setActiveProductTab("agents")}
-            >
+            <a className="transition hover:text-foreground" href={localizedAgentsUrl}>
               {t("nav_agents")}
             </a>
             <a className="transition hover:text-foreground" href={localizedUseCasesUrl}>
               {t("nav_use_cases")}
             </a>
-            <a
-              className="transition hover:text-foreground"
-              href={localizedDesktopUrl}
-              onClick={() => setActiveProductTab("desktop")}
-            >
+            <a className="transition hover:text-foreground" href={localizedDesktopUrl}>
               {t("nav_desktop")}
             </a>
           </div>
@@ -341,7 +311,7 @@ export function LandingHero({
               <CardContent className="flex flex-col gap-5 font-mono text-xs leading-6 md:text-sm md:leading-7">
                 <div>
                   <p className="text-muted-foreground">{t("terminal_install_prompt")}</p>
-                  <CommandList commands={installCommands} />
+                  <InstallCommandTabs commands={installCommands} />
                   <p className="text-success">{t("terminal_install_output")}</p>
                 </div>
                 <div>
@@ -376,166 +346,114 @@ export function LandingHero({
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto max-w-7xl px-5 py-16 md:px-8 md:py-20" id="library">
-        <span aria-hidden="true" className="block scroll-mt-28" id="agents" />
-        <span aria-hidden="true" className="block scroll-mt-28" id="desktop" />
-        <div className="mb-6 max-w-3xl">
+      <section
+        className="relative z-10 mx-auto grid max-w-7xl gap-5 px-5 py-16 md:grid-cols-2 md:px-8 md:py-20"
+        id="library"
+      >
+        <Card>
+          <CardHeader className="gap-5 p-6 md:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+              {t("library_eyebrow")}
+            </p>
+            <CardTitle className="font-black text-2xl leading-tight md:text-3xl">
+              {t("library_title")}
+            </CardTitle>
+            <CardDescription className="text-sm leading-6">{t("library_text")}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4 font-mono text-xs leading-6 md:text-sm">
+            <InstallCommandTabs commands={installCommands} />
+            <div className="rounded-lg border border-border bg-muted/50 p-4">
+              <p className="text-muted-foreground">$ {t("library_setup_command")}</p>
+              <p>$ {t("library_agent_command")}</p>
+              <p>$ {t("library_search_command")}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="gap-5 p-6 md:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+              {t("desktop_eyebrow")}
+            </p>
+            <CardTitle className="font-black text-2xl leading-tight md:text-3xl">
+              {t("desktop_title")}
+            </CardTitle>
+            <CardDescription className="text-sm leading-6">{t("desktop_text")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild variant="outline">
+              <a href={localizedDesktopUrl}>
+                {t("desktop_cta")}
+                <ArrowRight aria-hidden="true" data-icon="inline-end" />
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section
+        id="agents"
+        className="relative z-10 mx-auto max-w-7xl px-5 py-8 pb-20 md:px-8 md:pb-24"
+      >
+        <div className="mb-8 max-w-3xl">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-            {t("library_eyebrow")}
+            {t("agents_eyebrow")}
           </p>
           <h2 className="mt-4 font-black text-2xl leading-tight md:text-3xl">
-            {t("library_title")}
+            {t("agents_title")}
           </h2>
-          <p className="mt-4 text-sm leading-6 text-muted-foreground">{t("library_text")}</p>
+          <p className="mt-4 text-sm leading-6 text-muted-foreground">{t("agents_text")}</p>
         </div>
 
-        <Tabs className="gap-5" onValueChange={handleProductTabChange} value={activeProductTab}>
-          <TabsList className="grid h-auto w-full max-w-xl grid-cols-3 rounded-full border border-border bg-card/82 p-1 shadow-xl shadow-black/20 backdrop-blur-xl">
-            <TabsTrigger className="rounded-full py-2.5" value="library">
-              {t("nav_library")}
-            </TabsTrigger>
-            <TabsTrigger className="rounded-full py-2.5" value="agents">
-              {t("nav_agents")}
-            </TabsTrigger>
-            <TabsTrigger className="rounded-full py-2.5" value="desktop">
-              {t("nav_desktop")}
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent className="mt-4" value="library">
-            <Card>
-              <CardHeader className="gap-4 p-6 md:p-8">
+        <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+          <Card>
+            <CardHeader className="gap-4 p-6 md:p-8">
+              <div className="flex items-center gap-3">
+                <Plug aria-hidden="true" className="size-5 text-muted-foreground" />
                 <CardTitle className="font-black text-2xl leading-tight md:text-3xl">
-                  {t("library_title")}
+                  {t("agents_steps_title")}
                 </CardTitle>
-                <CardDescription className="text-sm leading-6">{t("library_text")}</CardDescription>
-              </CardHeader>
-              <CardContent className="grid gap-5 font-mono text-xs leading-6 md:grid-cols-[1.1fr_0.9fr] md:text-sm">
-                <CommandList commands={installCommands} />
-                <div className="rounded-lg border border-border bg-muted/50 p-4">
-                  <p className="text-muted-foreground">$ {t("library_setup_command")}</p>
-                  <p>$ {t("library_agent_command")}</p>
-                  <p>$ {t("library_search_command")}</p>
+              </div>
+              <CardDescription className="text-sm leading-6">
+                {t("agents_steps_text")}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3 md:grid-cols-3">
+              {agentSteps.map((step) => (
+                <div className="rounded-lg border border-border bg-muted/50 p-4" key={step.title}>
+                  <p className="font-bold text-sm">{step.title}</p>
+                  <p className="mt-1 text-muted-foreground text-sm leading-6">{step.text}</p>
+                  {step.commands ? (
+                    <InstallCommandTabs commands={step.commands} />
+                  ) : (
+                    <p className="mt-3 overflow-x-auto rounded-md border border-border bg-background p-3 font-mono text-xs text-foreground/78">
+                      $ {step.command}
+                    </p>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              ))}
+            </CardContent>
+          </Card>
 
-          <TabsContent className="mt-4" value="agents">
-            <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-              <Card>
-                <CardHeader className="gap-4 p-6 md:p-8">
+          <Card>
+            <CardHeader className="gap-4 p-6 md:p-8">
+              <CardTitle className="font-black text-2xl leading-tight md:text-3xl">
+                {t("agents_title")}
+              </CardTitle>
+              <CardDescription className="text-sm leading-6">{t("agents_text")}</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3 sm:grid-cols-2">
+              {agentTargets.map((agent) => (
+                <div className="rounded-lg border border-border bg-muted/45 p-4" key={agent.name}>
                   <div className="flex items-center gap-3">
-                    <Plug aria-hidden="true" className="size-5 text-muted-foreground" />
-                    <CardTitle className="font-black text-2xl leading-tight md:text-3xl">
-                      {t("agents_steps_title")}
-                    </CardTitle>
+                    <Code2 aria-hidden="true" className="size-5 text-muted-foreground" />
+                    <p className="font-bold text-sm">{agent.name}</p>
                   </div>
-                  <CardDescription className="text-sm leading-6">
-                    {t("agents_steps_text")}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-3 md:grid-cols-3">
-                  {agentSteps.map((step) => (
-                    <div
-                      className="rounded-lg border border-border bg-muted/50 p-4"
-                      key={step.title}
-                    >
-                      <p className="font-bold text-sm">{step.title}</p>
-                      <p className="mt-1 text-muted-foreground text-sm leading-6">{step.text}</p>
-                      {step.commands ? (
-                        <CommandList commands={step.commands} />
-                      ) : (
-                        <p className="mt-3 overflow-x-auto rounded-md border border-border bg-background p-3 font-mono text-xs text-foreground/78">
-                          $ {step.command}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="gap-4 p-6 md:p-8">
-                  <CardTitle className="font-black text-2xl leading-tight md:text-3xl">
-                    {t("agents_title")}
-                  </CardTitle>
-                  <CardDescription className="text-sm leading-6">
-                    {t("agents_text")}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-3 sm:grid-cols-2">
-                  {agentTargets.map((agent) => (
-                    <div
-                      className="rounded-lg border border-border bg-muted/45 p-4"
-                      key={agent.name}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Code2 aria-hidden="true" className="size-5 text-muted-foreground" />
-                        <p className="font-bold text-sm">{agent.name}</p>
-                      </div>
-                      <p className="mt-2 text-muted-foreground text-sm leading-6">{agent.text}</p>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent className="mt-4" value="desktop">
-            <div className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
-              <Card>
-                <CardHeader className="gap-5 p-6 md:p-8">
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                    {t("desktop_teaser_eyebrow")}
-                  </p>
-                  <CardTitle className="font-black text-2xl leading-tight md:text-3xl">
-                    {t("desktop_teaser_title")}
-                  </CardTitle>
-                  <CardDescription className="text-sm leading-6">
-                    {t("desktop_teaser_text")}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button asChild variant="outline">
-                    <a href="https://github.com/jcode-works/jcode-mimir" {...externalLinkProps}>
-                      {t("desktop_cta")}
-                      <GitBranch aria-hidden="true" data-icon="inline-end" />
-                    </a>
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="overflow-hidden shadow-2xl shadow-black/40">
-                <CardHeader className="border-b border-border">
-                  <div className="flex items-center justify-between gap-4">
-                    <CardTitle className="font-black text-xl leading-tight">
-                      {t("desktop_teaser_mock_title")}
-                    </CardTitle>
-                    <Badge variant="outline">{t("desktop_teaser_badge")}</Badge>
-                  </div>
-                  <CardDescription className="leading-6">
-                    {t("desktop_teaser_mock_text")}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-3 p-5 md:p-6">
-                  {desktopTeasers.map((item) => (
-                    <div
-                      className="grid gap-3 rounded-lg border border-border bg-muted/45 p-4 sm:grid-cols-[auto_1fr]"
-                      key={item.title}
-                    >
-                      <item.icon aria-hidden="true" className="size-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-bold text-sm">{item.title}</p>
-                        <p className="mt-1 text-muted-foreground text-sm leading-6">{item.text}</p>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
+                  <p className="mt-2 text-muted-foreground text-sm leading-6">{agent.text}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       </section>
 
       <section
@@ -567,6 +485,53 @@ export function LandingHero({
               </CardHeader>
             </Card>
           ))}
+        </div>
+      </section>
+
+      <section
+        id="desktop"
+        className="relative z-10 mx-auto max-w-7xl px-5 py-8 pb-20 md:px-8 md:pb-24"
+      >
+        <div className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
+          <div className="max-w-3xl">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+              {t("desktop_teaser_eyebrow")}
+            </p>
+            <h2 className="mt-4 font-black text-2xl leading-tight md:text-3xl">
+              {t("desktop_teaser_title")}
+            </h2>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">
+              {t("desktop_teaser_text")}
+            </p>
+          </div>
+
+          <Card className="overflow-hidden shadow-2xl shadow-black/40">
+            <CardHeader className="border-b border-border">
+              <div className="flex items-center justify-between gap-4">
+                <CardTitle className="font-black text-xl leading-tight">
+                  {t("desktop_teaser_mock_title")}
+                </CardTitle>
+                <Badge variant="outline">{t("desktop_teaser_badge")}</Badge>
+              </div>
+              <CardDescription className="leading-6">
+                {t("desktop_teaser_mock_text")}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3 p-5 md:p-6">
+              {desktopTeasers.map((item) => (
+                <div
+                  className="grid gap-3 rounded-lg border border-border bg-muted/45 p-4 sm:grid-cols-[auto_1fr]"
+                  key={item.title}
+                >
+                  <item.icon aria-hidden="true" className="size-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-bold text-sm">{item.title}</p>
+                    <p className="mt-1 text-muted-foreground text-sm leading-6">{item.text}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         </div>
       </section>
 
@@ -635,31 +600,33 @@ export function LandingHero({
   )
 }
 
-function CommandList({ commands }: { commands: InstallCommand[] }): React.JSX.Element {
+function InstallCommandTabs({ commands }: { commands: InstallCommand[] }): React.JSX.Element {
+  const defaultValue = commands[0]?.label ?? ""
+
   return (
-    <div className="mt-3 flex flex-col gap-2">
-      {commands.map((entry) => (
-        <div
-          className="grid gap-2 rounded-md border border-border bg-background p-3 sm:grid-cols-[5rem_1fr]"
-          key={entry.label}
-        >
-          <Badge className="w-fit uppercase" variant="outline">
+    <Tabs className="mt-3 gap-3" defaultValue={defaultValue}>
+      <TabsList className="grid h-auto w-full grid-cols-4 rounded-full border border-border bg-card/82 p-1">
+        {commands.map((entry) => (
+          <TabsTrigger
+            className="rounded-full px-2 py-2 text-xs uppercase"
+            key={entry.label}
+            value={entry.label}
+          >
             {entry.label}
-          </Badge>
-          <code className="overflow-x-auto text-foreground/78 text-xs">$ {entry.command}</code>
-        </div>
+          </TabsTrigger>
+        ))}
+      </TabsList>
+      {commands.map((entry) => (
+        <TabsContent
+          className="mt-0 overflow-x-auto rounded-md border border-border bg-background p-3"
+          key={entry.label}
+          value={entry.label}
+        >
+          <code className="text-foreground/78 text-xs">$ {entry.command}</code>
+        </TabsContent>
       ))}
-    </div>
+    </Tabs>
   )
-}
-
-function isProductTab(value: string): value is ProductTab {
-  return value === "library" || value === "agents" || value === "desktop"
-}
-
-function productTabFromHash(hash: string): ProductTab | undefined {
-  const normalizedHash = hash.replace(/^#/, "")
-  return isProductTab(normalizedHash) ? normalizedHash : undefined
 }
 
 function LanguageSwitcher({
