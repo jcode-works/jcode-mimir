@@ -38,6 +38,29 @@ Before publishing a public direct download:
 - Keep app license private keys outside the repository; only the public license JWK may be injected
   into the frontend build.
 
+## Signing Checklist
+
+macOS direct downloads require Apple Developer signing and notarization before public release:
+
+- Install or import the Developer ID Application certificate into the release keychain.
+- Resolve the signing identity with `security find-identity -v -p codesigning`.
+- Pass the identity through `APPLE_SIGNING_IDENTITY` or the Tauri macOS signing config.
+- Store Apple account credentials, app-specific password, certificate, and certificate password only
+  in the release machine keychain or CI secrets.
+- Notarize and staple public `.dmg` / `.app` artifacts before publishing.
+
+Windows direct downloads require Authenticode signing before public release:
+
+- Use an OV certificate first; EV is optional and mainly improves initial SmartScreen reputation.
+- Keep the certificate private key in the Windows certificate store, hardware token, or signing
+  service, not in the repository.
+- Configure the release build with the certificate thumbprint, SHA-256 digest, and a trusted
+  timestamp URL.
+- Verify the resulting NSIS/MSI signatures before publishing.
+
+Linux artifacts do not use the same platform signing flow, but published checksums are still
+required for every AppImage and Debian package.
+
 ## Updater Policy
 
 Tauri's updater is the right path for direct-download desktop updates, but it must not be configured
