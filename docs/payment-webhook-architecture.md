@@ -125,5 +125,5 @@ production licenses out of the repository and out of public build artifacts.
 - a test-mode purchase issues a valid local `MIMIR1` license;
 - duplicate webhook deliveries are idempotent;
 - refunds, cancellations, and subscription expirations update license metadata;
-- the app download page publishes signed artifacts and `SHA256SUMS`;
+- the app download page publishes signed artifacts, `SHA256SUMS`, and `mimir-app-release.json`;
 - no App Store, Play Store, or store entitlement path is required for purchase or activation.

@@ -60,6 +60,9 @@ jobs:
       - name: Generate checksums
         run: pnpm --filter @jcode.labs/mimir-app release:checksums
 
+      - name: Generate release manifest
+        run: pnpm --filter @jcode.labs/mimir-app release:manifest -- --target linux
+
       - name: Upload native bundle
         uses: actions/upload-artifact@v4
         with:
@@ -99,6 +102,9 @@ jobs:
 
       - name: Generate checksums
         run: pnpm --filter @jcode.labs/mimir-app release:checksums
+
+      - name: Generate release manifest
+        run: pnpm --filter @jcode.labs/mimir-app release:manifest -- --target macos
 
       - name: Upload native bundle
         uses: actions/upload-artifact@v4
@@ -140,6 +146,9 @@ jobs:
 
       - name: Generate checksums
         run: pnpm --filter @jcode.labs/mimir-app release:checksums
+
+      - name: Generate release manifest
+        run: pnpm --filter @jcode.labs/mimir-app release:manifest -- --target windows
 
       - name: Upload native bundle
         uses: actions/upload-artifact@v4

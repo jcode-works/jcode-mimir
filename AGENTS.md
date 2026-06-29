@@ -79,6 +79,10 @@
 - Generate native artifact checksums with `pnpm --filter @jcode.labs/mimir-app release:checksums`
   after Tauri packaging and before publishing direct-download files. The manual Native App Build
   workflow uploads the generated `SHA256SUMS` with the bundle artifacts.
+- Generate `mimir-app-release.json` with
+  `pnpm --filter @jcode.labs/mimir-app release:manifest -- --target <macos|windows|linux|android>`
+  after checksums. The manifest is for static direct-download metadata and must not contain fake
+  checkout URLs or unsigned-artifact claims.
 - App license validation is local and per-major. Keep private signing keys out of the repository;
   only inject the public JWK at build time through `VITE_MIMIR_LICENSE_PUBLIC_KEY_JWK`, and use
   `packages/mimir-app` `license:keypair` / `license:issue` scripts for local license operations.

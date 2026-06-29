@@ -30,7 +30,12 @@ Generate checksums after a native bundle exists:
 
 ```bash
 pnpm --filter @jcode.labs/mimir-app release:checksums
+pnpm --filter @jcode.labs/mimir-app release:manifest -- --target macos
 ```
+
+`release:manifest` reads `SHA256SUMS` and writes `mimir-app-release.json` next to native artifacts
+so the static direct-download surface can render verified artifact metadata without hardcoded file
+names.
 
 The app uses `@jcode.labs/mimir-ui` for shared styling and should keep privacy controls visible by
 default.

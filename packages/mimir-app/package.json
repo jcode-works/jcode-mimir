@@ -16,6 +16,8 @@
     "preview": "vite preview",
     "release:checksums": "node scripts/native-checksums.mjs",
     "release:checksums:smoke": "node scripts/native-checksums-smoke.mjs",
+    "release:manifest": "node scripts/native-release-manifest.mjs",
+    "release:manifest:smoke": "node scripts/native-release-manifest-smoke.mjs",
     "release:preflight": "node scripts/release-preflight.mjs",
     "release:updater-guard": "node scripts/updater-guard.mjs",
     "release:updater-guard:smoke": "node scripts/updater-guard-smoke.mjs",
