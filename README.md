@@ -37,6 +37,10 @@ separately. They point npm readers back to this GitHub documentation.
 The product name visible to users is **Mimir**. The technical core package is **Mimir Core** and now
 lives under `packages/mimir-core`; the public npm package name remains `@jcode.labs/mimir`.
 
+The paid desktop commercialization plan is tracked in
+[`docs/product-commercialization.md`](./docs/product-commercialization.md). No checkout or license
+secret is committed to this repository.
+
 ## Open Source
 
 Mimir is a public open-source project under the MIT License. It is designed to be inspectable,

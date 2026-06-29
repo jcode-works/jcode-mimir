@@ -49,6 +49,9 @@
 - Keep report generation separate from core retrieval. The `mimir-markdown-report` skill writes cited
   Markdown reports under ignored `.mimir/reports/` by default and must distinguish evidence,
   inference, uncertainty, missing documents, and professional-review items.
+- Keep paid-product commercialization decisions in `docs/product-commercialization.md`. Lemon
+  Squeezy is the default payment/license provider for now; Paddle is the fallback, Stripe is not the
+  first choice unless JCode accepts more tax/compliance ownership.
 - Ingestion must be explicit about files it did not index. Preserve `kb audit --unsupported`,
   unsupported-extension summaries, secret-like file skipping, max file size limits, and checksum-based
   stale detection.
