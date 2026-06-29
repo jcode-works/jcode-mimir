@@ -4,6 +4,9 @@ packages:
 
 strictDepBuilds: true
 
+overrides:
+  yaml: ^2.9.0
+
 allowBuilds:
   esbuild: true
   onnxruntime-node: true
