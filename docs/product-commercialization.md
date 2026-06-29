@@ -12,7 +12,8 @@ confidential dossiers.
 | Launch offer | 40% off | Early-adopter validation only; do not bake into permanent pricing. |
 
 The go/no-go threshold remains at least 5 paid pre-sales or purchases before heavy native packaging,
-signing, and licensing work.
+signing, and licensing work. The interview and pre-sales evidence protocol lives in
+[`gtm-validation.md`](./gtm-validation.md).
 
 ## Payment Provider Decision
 
