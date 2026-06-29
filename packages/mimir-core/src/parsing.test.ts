@@ -48,6 +48,39 @@ describe("parseFile", () => {
     expect(parsed.text).toContain("Invoice\t\t24000\tPaid")
   })
 
+  it("extracts text from pptx slides and speaker notes", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "mimir-pptx-"))
+    tempDirs.push(root)
+    const filePath = path.join(root, "deck.pptx")
+    await writeFile(
+      filePath,
+      zipSync({
+        "ppt/slides/slide1.xml": strToU8(
+          '<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree><p:sp><p:txBody><a:p><a:r><a:t>Roadmap slide</a:t></a:r></a:p></p:txBody></p:sp></p:spTree></p:cSld></p:sld>',
+        ),
+        "ppt/notesSlides/notesSlide1.xml": strToU8(
+          '<p:notes xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree><p:sp><p:txBody><a:p><a:r><a:t>Speaker note insight</a:t></a:r></a:p></p:txBody></p:sp></p:spTree></p:cSld></p:notes>',
+        ),
+      }),
+    )
+
+    const parsed = await parseFile(sourceFile(root, filePath, ".pptx"))
+
+    expect(parsed.text).toContain("Roadmap slide")
+    expect(parsed.text).toContain("Speaker note insight")
+  })
+
+  it("extracts text from PDF files", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "mimir-pdf-"))
+    tempDirs.push(root)
+    const filePath = path.join(root, "brief.pdf")
+    await writeFile(filePath, createTextPdf())
+
+    const parsed = await parseFile(sourceFile(root, filePath, ".pdf"))
+
+    expect(parsed.text).toContain("Synthetic confidential PDF")
+  })
+
   it("extracts text from epub html entries", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "mimir-epub-"))
     tempDirs.push(root)
@@ -99,4 +132,39 @@ function createDocxPackage(documentXml: string): Uint8Array {
     ),
     "word/document.xml": strToU8(documentXml),
   })
+}
+
+function createTextPdf(): string {
+  return `%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 56 >>
+stream
+BT /F1 18 Tf 72 720 Td (Synthetic confidential PDF) Tj ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f
+0000000009 00000 n
+0000000058 00000 n
+0000000115 00000 n
+0000000241 00000 n
+0000000311 00000 n
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+418
+%%EOF`
 }
