@@ -55,7 +55,7 @@ The app should start with a small allowlist:
 | Ask context | `mimir ask "<question>" --json` |
 | Privacy audit | `mimir security-audit --json` |
 | Unsupported files | `mimir audit --unsupported --json` |
-| Model preload | `mimir models pull --json` |
+| Model preload | `mimir models pull --enable --json` |
 | Audio report | `mimir audio "<generated-text-file>" --offline --json` |
 
 The UI must pass an explicit project root for each selected knowledge base with

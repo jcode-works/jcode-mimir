@@ -34,9 +34,9 @@ surface. In local native runs, set `MIMIR_CLI_BIN` when the `mimir` binary is no
 [`../../docs/app-sidecar-architecture.md`](../../docs/app-sidecar-architecture.md).
 
 The current shell consumes JSON from `mimir doctor`, `mimir status`, `mimir ingest`,
-`mimir ask`, `mimir security-audit`, `mimir models pull`, and offline `mimir audio` for project
-status, cited retrieval, privacy posture, explicit model preloading, Markdown reports, and local
-audio report rendering.
+`mimir ask`, `mimir security-audit`, `mimir models pull --enable`, and offline `mimir audio` for
+project status, cited retrieval, privacy posture, explicit semantic model setup, Markdown reports,
+and local audio report rendering.
 
 Registered projects can opt into watched-folder mode from the Projects view. This is a local polling
 layer over incremental `mimir ingest`: it re-indexes the selected project every 5 minutes, stores the

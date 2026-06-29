@@ -93,7 +93,12 @@ fn mimir_args(request: &MimirCommandRequest, project_root: &str) -> Result<Vec<S
             args.extend(["audit".into(), "--unsupported".into(), "--json".into()]);
         }
         MimirCommandKind::ModelsPull => {
-            args.extend(["models".into(), "pull".into(), "--json".into()]);
+            args.extend([
+                "models".into(),
+                "pull".into(),
+                "--enable".into(),
+                "--json".into(),
+            ]);
         }
         MimirCommandKind::AudioSummary => {
             let text_file = write_audio_summary_text(request, project_root)?;

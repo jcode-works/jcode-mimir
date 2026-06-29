@@ -395,7 +395,7 @@ export function App(): React.JSX.Element {
       const model = await runModelsPull(activeProject.projectRoot)
       const status = await runStatus(activeProject.projectRoot)
       setStatusReport(status)
-      setRuntimeMessage(`Embedding model ready: ${model.embeddingModel}.`)
+      setRuntimeMessage(`Semantic embeddings enabled: ${model.embeddingModel}.`)
     })
   }
 
@@ -831,7 +831,7 @@ function ProjectsView({
                 <p className="font-semibold">Embedding model</p>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
                   {activeProject
-                    ? "Preload the configured Transformers.js model before confidential indexing."
+                    ? "Preload the configured Transformers.js model and enable semantic retrieval."
                     : "Select a project to inspect and preload its configured model."}
                 </p>
               </div>
