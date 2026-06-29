@@ -35,8 +35,8 @@ developer and agent workflow around installation, indexing, querying, safety, au
 | --- | --- | --- |
 | Local validation | `pnpm validate` already covers lint, typecheck, tests, build, smoke, package checks, and artifacts. | Good. |
 | Release safety | npm publish is protected by CI, environment approval, provenance, and explicit version input. | Good. |
-| API clarity | Core exports are small and named, but the README only shows a minimal API snippet. | Partially improved by CLI docs; deeper API docs remain future work. |
-| MCP reference | Tool names and an agent demo prompt are documented, but tool schemas are not deeply documented. | Partially improved. |
+| API clarity | Core exports are small and named, but the README only shows a minimal API snippet. | Fixed: `docs/api-reference.md` documents the public TypeScript API and result types. |
+| MCP reference | Tool names and an agent demo prompt are documented, but tool schemas are not deeply documented. | Improved: `docs/api-reference.md` documents the MCP tool names and input shapes. |
 | Error guidance | Common setup and audio errors were not centralized. | Fixed in the root README troubleshooting section. |
 | Dist workflow | `dist/` is committed and documented in `CLAUDE.md`; this is unusual but CI-enforced. | Good for this repo, but keep documenting it. |
 
@@ -50,11 +50,10 @@ developer and agent workflow around installation, indexing, querying, safety, au
   Team/RBAC support remains out of scope.
 - `audit --unsupported` intentionally lists relative paths only; users still need to avoid pasting
   sensitive path names into public issue reports.
-- The library API is usable, but a dedicated API reference page would help external developers.
+- The library API is usable and now documented, but examples should grow with real external usage.
 
 ## Recommended Next Pass
 
-1. Add API reference docs for exported functions and result types.
-2. Add MCP tool schema examples for agent developers.
-3. Add a model-preload guide for offline TTS.
-4. Add deeper API reference docs for external library consumers once the public API grows.
+1. Add a model-preload guide for offline TTS.
+2. Add example-driven API guides once real external library usage appears.
+3. Add richer MCP client examples if users integrate non-Claude/Codex agents.

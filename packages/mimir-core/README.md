@@ -60,6 +60,9 @@ For better semantic Q&A, run `pnpm exec mimir models pull --enable`, then run
 - MCP server: `pnpm exec mimir serve-mcp`
 - Bundled skills: `pnpm exec mimir setup` or `pnpm exec mimir install-skill`
 
+The public TypeScript API reference is maintained in the root repository at
+[`docs/api-reference.md`](https://github.com/jcode-works/jcode-mimir/blob/main/docs/api-reference.md).
+
 ## Claude Code And Codex
 
 After `pnpm exec mimir setup`, use `pnpm exec mimir install-agent --agents claude`, `--agents kimi`, or a

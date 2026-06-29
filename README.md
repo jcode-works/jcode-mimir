@@ -576,6 +576,9 @@ const results = await search("vendor invoice status")
 const answer = await ask("What documents support the project timeline?")
 ```
 
+The full public TypeScript API reference lives in
+[`docs/api-reference.md`](./docs/api-reference.md).
+
 ## Troubleshooting
 
 Use `mimir doctor` first. It is the shortest path to the next useful action:
@@ -694,6 +697,8 @@ pnpm --dir packages/mimir-core pack
 
 - [`SECURITY-HARDENING.md`](./SECURITY-HARDENING.md): threat model, offline operation, release
   verification, and high-assurance deployment notes.
+- [`docs/api-reference.md`](./docs/api-reference.md): public TypeScript API functions, result types,
+  and MCP tool inputs.
 - [`docs/fr-eu-sovereign-positioning.md`](./docs/fr-eu-sovereign-positioning.md): bounded FR/EU
   sovereignty, GDPR, AI Act, and legal-vertical positioning.
 - [`docs/ux-dx-audit.md`](./docs/ux-dx-audit.md): current UX/DX findings, fixes, and remaining
