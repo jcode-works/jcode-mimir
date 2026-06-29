@@ -7,6 +7,7 @@ const env = {
   MIMIR_LICENSE_PRIVATE_KEY_JWK: JSON.stringify(privateKeyJwk),
   MIMIR_LICENSE_MAJOR_VERSION: "0",
   MIMIR_LICENSE_DOWNLOAD_URL: "https://mimir.jcode.works/download",
+  MIMIR_LICENSE_RECORDS: memoryLicenseStore(),
 }
 
 await smokeOrderLicense(publicKeyJwk)
@@ -32,6 +33,13 @@ async function smokeOrderLicense(publicKeyJwk) {
   assertEqual(payload.tier, "solo", "payload tier")
   assertEqual(payload.majorVersion, 0, "payload majorVersion")
   assertEqual(payload.licenseId, "lemonsqueezy:order:order-synthetic-001", "payload licenseId")
+
+  const replay = await handleLicenseWebhook(await signedRequest(body), env)
+  assertEqual(replay.status, 200, "order replay response status")
+  const replayOutput = await replay.json()
+  assertEqual(replayOutput.idempotentReplay, true, "order replay marker")
+  assertEqual(replayOutput.licenseKey, output.licenseKey, "order replay licenseKey")
+  assertEqual(env.MIMIR_LICENSE_RECORDS.size(), 1, "stored order record count")
 }
 
 async function smokeInvalidSignature() {
@@ -161,6 +169,21 @@ function syntheticSubscriptionCancelledEvent() {
         product_name: "Mimir Desktop",
         variant_name: "Mimir Desktop Team",
       },
+    },
+  }
+}
+
+function memoryLicenseStore() {
+  const records = new Map()
+  return {
+    async get(key) {
+      return records.get(key) ?? null
+    },
+    async put(key, value) {
+      records.set(key, value)
+    },
+    size() {
+      return records.size
     },
   }
 }

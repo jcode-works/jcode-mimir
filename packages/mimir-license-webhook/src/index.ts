@@ -13,12 +13,18 @@ const RECORD_ONLY_EVENTS = new Set([
 ])
 type JsonRecord = Record<string, unknown>
 
+type LicenseRecordStore = {
+  get(key: string): Promise<string | null>
+  put(key: string, value: string): Promise<void>
+}
+
 export type LicenseWebhookEnv = {
   LEMONSQUEEZY_WEBHOOK_SECRET?: string
   MIMIR_LICENSE_PRIVATE_KEY_JWK?: string
   MIMIR_LICENSE_MAJOR_VERSION?: string
   MIMIR_LICENSE_UPDATES_YEARS?: string
   MIMIR_LICENSE_DOWNLOAD_URL?: string
+  MIMIR_LICENSE_RECORDS?: LicenseRecordStore
 }
 
 type LicensePayload = {
@@ -51,6 +57,16 @@ type RecordOnlyDraft = LemonEventSummary & {
 
 type WebhookDraft = LicenseDraft | RecordOnlyDraft
 
+type WebhookResponseBody = JsonRecord & {
+  ok: true
+  action: WebhookDraft["action"]
+  eventName: string
+  sourceType: string
+  sourceId: string
+  idempotencyKey: string
+  licenseId: string
+}
+
 export default {
   async fetch(request: Request, env: LicenseWebhookEnv): Promise<Response> {
     return handleLicenseWebhook(request, env)
@@ -73,41 +89,57 @@ export async function handleLicenseWebhook(
     return jsonResponse({ ok: false, error: "invalid_signature" }, 401)
   }
 
-  const event = parseJsonRecord(rawBody)
-  const draft = draftFromLemonSqueezyEvent(event, env)
+  try {
+    const event = parseJsonRecord(rawBody)
+    const draft = draftFromLemonSqueezyEvent(event, env)
+    const store = requiredStore(env.MIMIR_LICENSE_RECORDS)
+    const storedBody = await readStoredBody(store, draft.idempotencyKey)
 
-  if (draft.action === "record_only") {
-    return jsonResponse({
+    if (storedBody) {
+      return jsonResponse({ ...storedBody, idempotentReplay: true })
+    }
+
+    if (draft.action === "record_only") {
+      const body: WebhookResponseBody = {
+        ok: true,
+        action: draft.action,
+        eventName: draft.eventName,
+        sourceType: draft.sourceType,
+        sourceId: draft.sourceId,
+        idempotencyKey: draft.idempotencyKey,
+        licenseId: draft.licenseId,
+      }
+      await storeBody(store, body)
+      return jsonResponse(body)
+    }
+
+    const privateKeyJwk = JSON.parse(
+      requiredEnv(env.MIMIR_LICENSE_PRIVATE_KEY_JWK, "MIMIR_LICENSE_PRIVATE_KEY_JWK"),
+    )
+    const licenseKey = await signLicensePayload(draft.payload, privateKeyJwk)
+    const body: WebhookResponseBody = {
       ok: true,
       action: draft.action,
       eventName: draft.eventName,
       sourceType: draft.sourceType,
       sourceId: draft.sourceId,
       idempotencyKey: draft.idempotencyKey,
-      licenseId: draft.licenseId,
-    })
+      holder: draft.payload.holder,
+      tier: draft.payload.tier,
+      licenseId: draft.payload.licenseId,
+      updatesUntil: draft.payload.updatesUntil,
+      expiresAt: draft.payload.expiresAt ?? null,
+      downloadUrl: env.MIMIR_LICENSE_DOWNLOAD_URL ?? null,
+      licenseKey,
+    }
+    await storeBody(store, body)
+    return jsonResponse(body)
+  } catch (error) {
+    return jsonResponse(
+      { ok: false, error: error instanceof Error ? error.message : "license_webhook_failed" },
+      400,
+    )
   }
-
-  const privateKeyJwk = JSON.parse(
-    requiredEnv(env.MIMIR_LICENSE_PRIVATE_KEY_JWK, "MIMIR_LICENSE_PRIVATE_KEY_JWK"),
-  )
-  const licenseKey = await signLicensePayload(draft.payload, privateKeyJwk)
-
-  return jsonResponse({
-    ok: true,
-    action: draft.action,
-    eventName: draft.eventName,
-    sourceType: draft.sourceType,
-    sourceId: draft.sourceId,
-    idempotencyKey: draft.idempotencyKey,
-    holder: draft.payload.holder,
-    tier: draft.payload.tier,
-    licenseId: draft.payload.licenseId,
-    updatesUntil: draft.payload.updatesUntil,
-    expiresAt: draft.payload.expiresAt ?? null,
-    downloadUrl: env.MIMIR_LICENSE_DOWNLOAD_URL ?? null,
-    licenseKey,
-  })
 }
 
 export async function verifyLemonSqueezySignature(
@@ -292,6 +324,39 @@ function jsonResponse(body: JsonRecord, status = 200) {
   })
 }
 
+async function readStoredBody(
+  store: LicenseRecordStore,
+  idempotencyKey: string,
+): Promise<WebhookResponseBody | null> {
+  const stored = await store.get(storageKey(idempotencyKey))
+  if (!stored) return null
+  const parsed = record(JSON.parse(stored))
+  if (isWebhookResponseBody(parsed)) {
+    return parsed
+  }
+  throw new Error("Stored license webhook record is invalid.")
+}
+
+async function storeBody(store: LicenseRecordStore, body: WebhookResponseBody) {
+  await store.put(storageKey(body.idempotencyKey), JSON.stringify(body))
+}
+
+function storageKey(idempotencyKey: string) {
+  return `lemon:${idempotencyKey}`
+}
+
+function isWebhookResponseBody(value: JsonRecord): value is WebhookResponseBody {
+  return (
+    value.ok === true &&
+    (value.action === "license_issued" || value.action === "record_only") &&
+    typeof value.eventName === "string" &&
+    typeof value.sourceType === "string" &&
+    typeof value.sourceId === "string" &&
+    typeof value.idempotencyKey === "string" &&
+    typeof value.licenseId === "string"
+  )
+}
+
 function positiveInteger(value: string | undefined, fallback: number) {
   const parsed = Number.parseInt(value ?? String(fallback), 10)
   if (!Number.isInteger(parsed) || parsed < 0) {
@@ -324,6 +389,13 @@ function required(value: string, message: string) {
 function requiredEnv(value: string | undefined, name: string) {
   if (!value) {
     throw new Error(`${name} is required.`)
+  }
+  return value
+}
+
+function requiredStore(value: LicenseRecordStore | undefined) {
+  if (!value) {
+    throw new Error("MIMIR_LICENSE_RECORDS KV binding is required.")
   }
   return value
 }

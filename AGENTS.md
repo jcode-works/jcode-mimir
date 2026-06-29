@@ -184,8 +184,9 @@ General principles (KISS, DRY, YAGNI, SOLID) as applied in this codebase. Match 
 - `packages/mimir-landing` owns the static Astro landing page.
 - `packages/mimir-app` owns the Tauri app shell for desktop and mobile.
 - `packages/mimir-license-webhook` owns the private Cloudflare Worker handler for Lemon Squeezy
-  webhook signature verification and local `MIMIR1` license issuance. It must stay undeployed until
-  real provider variants, secrets, storage/idempotency, and a release surface exist.
+  webhook signature verification, KV-backed idempotency records, and local `MIMIR1` license
+  issuance. It must stay undeployed until real provider variants, secrets, storage/idempotency, and a
+  release surface exist.
 - The app integrates Mimir Core through the existing `mimir` CLI/MCP surface. Keep the sidecar
   decision and command allowlist in `docs/app-sidecar-architecture.md`; the current native bridge is
   the bounded `run_mimir_command` Tauri command, and `externalBin` stays deferred until real platform
