@@ -13,6 +13,7 @@
     "license:issue": "node scripts/license-issue.mjs",
     "license:keypair": "node scripts/license-keypair.mjs",
     "preview": "vite preview",
+    "release:checksums": "node scripts/native-checksums.mjs",
     "release:preflight": "node scripts/release-preflight.mjs",
     "tauri": "tauri",
     "tauri:android:build": "tauri android build --apk",

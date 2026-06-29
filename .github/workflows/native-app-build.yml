@@ -57,6 +57,9 @@ jobs:
       - name: Build native bundle
         run: pnpm --filter @jcode.labs/mimir-app tauri:build:linux
 
+      - name: Generate checksums
+        run: pnpm --filter @jcode.labs/mimir-app release:checksums
+
       - name: Upload native bundle
         uses: actions/upload-artifact@v4
         with:
@@ -93,6 +96,9 @@ jobs:
 
       - name: Build native bundle
         run: pnpm --filter @jcode.labs/mimir-app tauri:build:macos
+
+      - name: Generate checksums
+        run: pnpm --filter @jcode.labs/mimir-app release:checksums
 
       - name: Upload native bundle
         uses: actions/upload-artifact@v4
@@ -131,6 +137,9 @@ jobs:
 
       - name: Build native bundle
         run: pnpm --filter @jcode.labs/mimir-app tauri:build:windows
+
+      - name: Generate checksums
+        run: pnpm --filter @jcode.labs/mimir-app release:checksums
 
       - name: Upload native bundle
         uses: actions/upload-artifact@v4

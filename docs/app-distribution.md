@@ -42,7 +42,8 @@ Before publishing a public direct download:
   on the matching release machine before building native artifacts.
 - Build the target platform artifact on the matching release machine or CI runner.
 - Sign macOS and Windows artifacts with release credentials that are never committed.
-- Publish checksums next to every downloadable artifact.
+- Generate checksums with `pnpm --filter @jcode.labs/mimir-app release:checksums` and publish
+  `SHA256SUMS` next to every downloadable artifact.
 - Keep generated release artifacts under ignored output folders until an explicit release upload.
 - Keep app license private keys outside the repository; only the public license JWK may be injected
   into the frontend build.
@@ -74,6 +75,10 @@ required for every AppImage and Debian package. Run
 `pnpm --filter @jcode.labs/mimir-app release:preflight -- --target linux` on the Linux release
 machine before `tauri:build:linux`, or run the manual Native App Build workflow with target `linux`
 to produce Linux CI artifacts.
+
+The manual Native App Build workflow generates a `SHA256SUMS` manifest inside the uploaded native
+bundle artifact. For local builds, run the checksum command after the native build and before moving
+files to a public download surface.
 
 Android APK artifacts require an Android SDK and JDK on the release machine. Run
 `pnpm --filter @jcode.labs/mimir-app release:preflight -- --target android` before

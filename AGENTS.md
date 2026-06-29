@@ -74,6 +74,9 @@
 - Before native app packaging, run `pnpm --filter @jcode.labs/mimir-app release:preflight -- --target
   <macos|windows|linux|android>` on the matching release machine. The preflight may check that
   secret-bearing environment variables are present, but it must never print their values.
+- Generate native artifact checksums with `pnpm --filter @jcode.labs/mimir-app release:checksums`
+  after Tauri packaging and before publishing direct-download files. The manual Native App Build
+  workflow uploads the generated `SHA256SUMS` with the bundle artifacts.
 - App license validation is local and per-major. Keep private signing keys out of the repository;
   only inject the public JWK at build time through `VITE_MIMIR_LICENSE_PUBLIC_KEY_JWK`, and use
   `packages/mimir-app` `license:keypair` / `license:issue` scripts for local license operations.

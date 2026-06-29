@@ -26,6 +26,12 @@ pnpm --filter @jcode.labs/mimir-app release:preflight -- --target linux
 pnpm --filter @jcode.labs/mimir-app release:preflight -- --target android
 ```
 
+Generate checksums after a native bundle exists:
+
+```bash
+pnpm --filter @jcode.labs/mimir-app release:checksums
+```
+
 The app uses `@jcode.labs/mimir-ui` for shared styling and should keep privacy controls visible by
 default.
 
