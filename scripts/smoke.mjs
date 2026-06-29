@@ -246,6 +246,21 @@ async function smokeExampleWorkspace() {
     assertIncludes(audit.stdout, "missingFromIndex=0", "example audit should find no missing files")
     assertIncludes(audit.stdout, "staleInIndex=0", "example audit should find no stale files")
 
+    const evaluation = parseJson(
+      (await runKb(["evaluate", "--golden", "golden-queries.json", "--json"], exampleTemp)).stdout,
+      "example evaluation JSON",
+    )
+    if (
+      evaluation.total !== 4 ||
+      evaluation.hits !== 4 ||
+      evaluation.misses !== 0 ||
+      evaluation.recall !== 1
+    ) {
+      throw new Error(
+        `example evaluate should hit every golden query, got ${JSON.stringify(evaluation)}`,
+      )
+    }
+
     const approvalSearch = await runKb(
       ["search", "offline retrieval approval", "--top-k", "2"],
       exampleTemp,
