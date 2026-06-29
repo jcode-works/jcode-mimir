@@ -62,10 +62,15 @@ The app now has a local signed-license path:
   `VITE_MIMIR_LICENSE_PUBLIC_KEY_JWK`.
 - Private signing keys stay outside the repository and are supplied only to
   `pnpm --filter @jcode.labs/mimir-app license:issue`.
+- Lemon Squeezy order/subscription exports or webhook payloads can be converted offline through
+  `pnpm --filter @jcode.labs/mimir-app license:from-lemonsqueezy`; no Lemon Squeezy API key is stored
+  in this repository.
+
+Subscription-style licenses map `renews_at` / explicit `--expires-at` to both the update window and
+runtime expiration. Perpetual purchases omit runtime expiration and keep the per-major update window.
 
 ## Deferred Implementation
 
 - Create Lemon Squeezy product and variants.
 - Wire hosted checkout links into the landing.
-- Define webhook handling for purchases, renewals, refunds, and license events.
-- Connect provider-issued license events to the local license format.
+- Automate hosted webhook handling for purchases, renewals, refunds, and license events.

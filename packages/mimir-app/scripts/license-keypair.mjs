@@ -1,13 +1,12 @@
+import { webcrypto } from "node:crypto"
 import { mkdir, writeFile } from "node:fs/promises"
 import path from "node:path"
-import { webcrypto } from "node:crypto"
 
 const args = parseArgs(process.argv.slice(2))
-const keyPair = await webcrypto.subtle.generateKey(
-  { name: "ECDSA", namedCurve: "P-256" },
-  true,
-  ["sign", "verify"],
-)
+const keyPair = await webcrypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, [
+  "sign",
+  "verify",
+])
 const privateKey = await webcrypto.subtle.exportKey("jwk", keyPair.privateKey)
 const publicKey = await webcrypto.subtle.exportKey("jwk", keyPair.publicKey)
 

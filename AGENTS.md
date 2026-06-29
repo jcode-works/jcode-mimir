@@ -58,6 +58,8 @@
 - App license validation is local and per-major. Keep private signing keys out of the repository;
   only inject the public JWK at build time through `VITE_MIMIR_LICENSE_PUBLIC_KEY_JWK`, and use
   `packages/mimir-app` `license:keypair` / `license:issue` scripts for local license operations.
+- Lemon Squeezy integration stays offline until a real webhook service exists: convert exported
+  order/subscription JSON with `license:from-lemonsqueezy`, never commit API keys or webhook secrets.
 - `packages/mimir-app/src/lib/project-registry.ts` owns the app-side local project registry. Store
   selected project roots there and derive `private/` plus `.kb/storage`; keep ingest/query/index
   truth in Mimir Core through the sidecar/CLI surface.

@@ -69,3 +69,17 @@ pnpm --filter @jcode.labs/mimir-app license:issue \
   --tier solo \
   --major-version 0
 ```
+
+Convert a Lemon Squeezy order/subscription JSON export or webhook payload into the same local
+license format:
+
+```bash
+pnpm --filter @jcode.labs/mimir-app license:from-lemonsqueezy \
+  --event lemon-event.json \
+  --private-key .mimir/license-private.jwk \
+  --major-version 0 \
+  --json
+```
+
+The adapter runs offline. It does not call the Lemon Squeezy API and it does not store provider
+secrets in the repository.
