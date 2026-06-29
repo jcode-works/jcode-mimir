@@ -268,6 +268,14 @@ Measure recall against a golden query file:
 pnpm exec mimir evaluate --golden golden-queries.json
 ```
 
+For private dogfooding, keep the real corpus and golden query file outside Git or under an ignored
+local path, then use a threshold that matches the evaluation phase:
+
+```bash
+pnpm exec mimir --project-root /path/to/workspace ingest
+pnpm exec mimir --project-root /path/to/workspace evaluate --golden private/golden-queries.json --fail-under 0.8 --json
+```
+
 Mimir does not synthesize an LLM answer. It returns cited local passages; your chosen agent or model
 does the writing around those passages.
 
@@ -644,6 +652,7 @@ node ../../dist/cli.js security-audit
 node ../../dist/cli.js ingest
 node ../../dist/cli.js search "offline retrieval approval"
 node ../../dist/cli.js evaluate --golden golden-queries.json
+node ../../dist/cli.js evaluate --golden golden-queries.json --fail-under 1
 node ../../dist/cli.js audit
 ```
 

@@ -216,6 +216,7 @@ program
     .description("Measure retrieval recall against a JSON golden query file.")
     .requiredOption("--golden <path>", "JSON file with queries and expected relative source paths.")
     .option("-k, --top-k <number>", "Default number of passages to evaluate per query.", parsePositiveInt)
+    .option("--fail-under <recall>", "Exit non-zero only when recall is below this threshold from 0 to 1.", parseRecallThreshold)
     .option("--json", "Print machine-readable JSON.")
     .action(async (options, command) => {
     const cwd = projectRoot(command);
@@ -225,14 +226,20 @@ program
     };
     addOption(evaluationOptions, "topK", options.topK);
     const result = await evaluateGoldenQueries(evaluationOptions);
+    const minimumRecall = options.failUnder ?? 1;
+    const passed = result.recall >= minimumRecall;
     if (options.json) {
-        console.log(JSON.stringify(result, null, 2));
-        if (result.misses > 0) {
+        const payload = options.failUnder === undefined ? result : { ...result, minimumRecall, passed };
+        console.log(JSON.stringify(payload, null, 2));
+        if (!passed) {
             process.exitCode = 1;
         }
         return;
     }
-    console.log(`golden=${result.goldenPath} total=${result.total} hits=${result.hits} misses=${result.misses} recall=${result.recall.toFixed(3)}`);
+    const thresholdSummary = options.failUnder === undefined
+        ? ""
+        : ` minimumRecall=${minimumRecall.toFixed(3)} passed=${passed}`;
+    console.log(`golden=${result.goldenPath} total=${result.total} hits=${result.hits} misses=${result.misses} recall=${result.recall.toFixed(3)}${thresholdSummary}`);
     for (const testCase of result.cases) {
         const label = testCase.id ? `${testCase.id}: ${testCase.query}` : testCase.query;
         const status = testCase.hit ? pc.green("hit") : pc.red("miss");
@@ -243,7 +250,7 @@ program
             console.log(`  returned=${testCase.returnedPaths.join(",")}`);
         }
     }
-    if (result.misses > 0) {
+    if (!passed) {
         process.exitCode = 1;
     }
 });
@@ -526,6 +533,14 @@ function parsePositiveInt(value) {
     const parsed = Number.parseInt(value, 10);
     if (!Number.isInteger(parsed) || parsed <= 0) {
         throw new Error("Expected a positive integer.");
+    }
+    return parsed;
+}
+function parseRecallThreshold(value) {
+    const trimmed = value.trim();
+    const parsed = Number(trimmed);
+    if (trimmed.length === 0 || !Number.isFinite(parsed) || parsed < 0 || parsed > 1) {
+        throw new Error("Expected a recall threshold between 0 and 1.");
     }
     return parsed;
 }

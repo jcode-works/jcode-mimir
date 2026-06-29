@@ -57,6 +57,7 @@ Mimir ships two CLIs:
 | --- | --- | --- |
 | `--project-root <path>` | all project-scoped `mimir` commands | Run against a specific local workspace instead of the current directory. |
 | `--top-k <number>` | `search`, `ask`, `evaluate` | Number of passages to return. |
+| `--fail-under <recall>` | `evaluate` | Exit non-zero only when recall is below a threshold from `0` to `1`; without this option evaluation remains strict and fails on any miss. |
 | `--json` | `doctor`, `ingest`, `search`, `ask`, `evaluate`, `audit`, `status`, `security-audit`, `audio --doctor`, `mimir-tts doctor` | Print machine-readable JSON. |
 | `--unsupported` | `audit` | List skipped file paths and reasons. |
 | `--strict` | `security-audit` | Exit non-zero when warnings exist. |
@@ -81,3 +82,19 @@ prints OCR text to stdout:
 
 Or set `KB_PDF_OCR_COMMAND` to a JSON array. Mimir only invokes it for PDFs where embedded-text
 extraction returns no text.
+
+## Retrieval Evaluation Gates
+
+`mimir evaluate` expects a JSON golden query file with queries and expected relative source paths.
+Use the default strict behavior for synthetic examples and release checks:
+
+```bash
+mimir evaluate --golden golden-queries.json
+```
+
+For private dogfooding, keep the real corpus and golden query file outside Git or under an ignored
+local path, then choose an explicit recall threshold:
+
+```bash
+mimir --project-root /path/to/workspace evaluate --golden private/golden-queries.json --fail-under 0.8 --json
+```

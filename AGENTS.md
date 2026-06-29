@@ -39,6 +39,8 @@
 - Keep real-corpus dogfooding, business validation, pricing tests, customer ledgers, interview notes,
   generated JSON, reports, screenshots, paths, and client details outside Git. Commit only public-safe
   aggregate findings or synthetic reproductions.
+- For private retrieval dogfooding, use `mimir evaluate --fail-under <recall>` as the local recall
+  gate, and keep the real corpus, golden query files, and generated evaluation JSON outside Git.
 - Keep user-facing titles and marketing surfaces branded as `Mimir`. Use `Mimir Core` only for the
   technical core package and developer-facing metadata.
 - Keep public repository surfaces safe to publish: no active checkout URLs, fake download/update URLs

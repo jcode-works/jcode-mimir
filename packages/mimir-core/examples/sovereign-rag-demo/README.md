@@ -33,6 +33,7 @@ node ../../dist/cli.js search "offline retrieval approval"
 node ../../dist/cli.js search "dataset residency"
 node ../../dist/cli.js ask "What evidence supports offline operation?"
 node ../../dist/cli.js evaluate --golden golden-queries.json
+node ../../dist/cli.js evaluate --golden golden-queries.json --fail-under 1
 node ../../dist/cli.js audit
 node ../../dist/cli.js audit --unsupported
 node ../../dist/cli.js status
@@ -79,6 +80,7 @@ Preload the model files under `.mimir/models` for offline work, then rebuild the
 node ../../dist/cli.js ingest
 node ../../dist/cli.js ask "What documents support sovereign deployment?"
 node ../../dist/cli.js evaluate --golden golden-queries.json --json
+node ../../dist/cli.js evaluate --golden golden-queries.json --fail-under 0.8 --json
 ```
 
 ## Generated State

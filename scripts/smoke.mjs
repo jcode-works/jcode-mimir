@@ -271,6 +271,66 @@ async function smokeExampleWorkspace() {
       )
     }
 
+    await writeFile(
+      path.join(exampleTemp, "partial-golden-queries.json"),
+      `${JSON.stringify(
+        {
+          queries: [
+            {
+              id: "known-hit",
+              query: "Which dataset was rejected for confidential tests?",
+              expectedPaths: ["raw/dataset-inventory.csv"],
+            },
+            {
+              id: "known-miss",
+              query: "Which source mentions a non-existent approval?",
+              expectedPaths: ["raw/does-not-exist.md"],
+            },
+          ],
+        },
+        null,
+        2,
+      )}\n`,
+    )
+    const thresholdEvaluation = parseJson(
+      (
+        await runKb(
+          ["evaluate", "--golden", "partial-golden-queries.json", "--fail-under", "0.5", "--json"],
+          exampleTemp,
+        )
+      ).stdout,
+      "threshold evaluation JSON",
+    )
+    if (
+      thresholdEvaluation.total !== 2 ||
+      thresholdEvaluation.hits !== 1 ||
+      thresholdEvaluation.misses !== 1 ||
+      thresholdEvaluation.minimumRecall !== 0.5 ||
+      thresholdEvaluation.passed !== true
+    ) {
+      throw new Error(
+        `evaluate --fail-under should allow configured recall thresholds, got ${JSON.stringify(
+          thresholdEvaluation,
+        )}`,
+      )
+    }
+    const thresholdFailure = parseJson(
+      (
+        await runKbFailure(
+          ["evaluate", "--golden", "partial-golden-queries.json", "--fail-under", "0.75", "--json"],
+          exampleTemp,
+        )
+      ).stdout,
+      "threshold failure evaluation JSON",
+    )
+    if (thresholdFailure.recall !== 0.5 || thresholdFailure.passed !== false) {
+      throw new Error(
+        `evaluate --fail-under should fail when recall is below threshold, got ${JSON.stringify(
+          thresholdFailure,
+        )}`,
+      )
+    }
+
     const approvalSearch = await runKb(
       ["search", "offline retrieval approval", "--top-k", "2"],
       exampleTemp,
