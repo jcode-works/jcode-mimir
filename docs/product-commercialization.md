@@ -29,6 +29,17 @@ Rationale:
 Keep Paddle as the fallback if Lemon Squeezy cannot support the final EU VAT, licensing, or payout
 requirements. Avoid Stripe as the first choice unless JCode wants to own more tax/compliance work.
 
+## Brand And Domain
+
+Public product brand: **Mimir**.
+
+Paid app name: **Mimir Desktop**. Keep it as a product descriptor, not a separate brand; the user-facing
+surface remains Mimir.
+
+Canonical landing domain: **mimir.jcode.works**. The domain is reserved for the static landing and
+direct-download release surface. Do not use App Store or Play Store URLs as the primary product
+destination.
+
 ## Distribution Model
 
 Distribute Mimir Desktop through direct downloads and sideloadable installers, not through App Store
