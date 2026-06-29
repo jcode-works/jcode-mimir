@@ -16,8 +16,55 @@ const alternateLocales = locales.map((entry) => ({
   label: languages[entry],
   href: getLocalizedUrl("/", entry),
 }))
+const siteUrl = new URL("/", Astro.site ?? "https://mimir.jcode.works").href
 const pageUrl = new URL(getLocalizedUrl("/", locale), Astro.site ?? "https://mimir.jcode.works").href
+const faqItems = [
+  {
+    question: t("faq_private_question"),
+    answer: t("faq_private_answer"),
+  },
+  {
+    question: t("faq_formats_question"),
+    answer: t("faq_formats_answer"),
+  },
+  {
+    question: t("faq_desktop_question"),
+    answer: t("faq_desktop_answer"),
+  },
+]
 const structuredData = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": "https://mimir.jcode.works/#organization",
+    name: "JCode Labs",
+    url: "https://github.com/jcode-works",
+    founder: {
+      "@type": "Person",
+      "@id": "https://mimir.jcode.works/#jb-thery",
+      name: "Jean-Baptiste Thery",
+      url: "https://github.com/jb-thery",
+      sameAs: ["https://github.com/jb-thery"],
+    },
+    knowsAbout: [
+      "local-first retrieval",
+      "sovereign RAG",
+      "confidential document search",
+      "Model Context Protocol",
+      "AI agent tooling",
+    ],
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "https://mimir.jcode.works/#website",
+    url: siteUrl,
+    name: "Mimir",
+    alternateName: t("seo_og_site_name"),
+    description: t("seo_home_description"),
+    inLanguage: locale,
+    publisher: { "@id": "https://mimir.jcode.works/#organization" },
+  },
   {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -52,15 +99,25 @@ const structuredData = [
       "Metadata-only access logs",
     ],
     publisher: {
-      "@type": "Organization",
-      name: "JCode Labs",
-      url: "https://github.com/jcode-works",
+      "@id": "https://mimir.jcode.works/#organization",
     },
     author: {
-      "@type": "Person",
-      name: "Jean-Baptiste Thery",
-      url: "https://github.com/jb-thery",
+      "@id": "https://mimir.jcode.works/#jb-thery",
     },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${pageUrl}#faq`,
+    inLanguage: locale,
+    mainEntity: faqItems.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
   },
 ]
 ---
