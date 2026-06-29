@@ -29,7 +29,7 @@ This root README is the canonical product documentation for the public npm packa
 | `@jcode.labs/mimir-tts` | Mimir add-on for Edge-quality MP3 and offline Transformers.js WAV rendering through `kb audio`. |
 | `@jcode.labs/mimir-ui` | Private workspace UI package adapted from the WorkoutGen design foundation for Mimir surfaces. |
 | `@jcode.labs/mimir-landing` | Private Astro static landing package. Product-facing titles stay `Mimir`. |
-| `@jcode.labs/mimir-app` | Private Tauri desktop/mobile shell package. Native builds are explicit app commands. |
+| `@jcode.labs/mimir-app` | Private Tauri desktop/mobile shell package. Native builds are explicit app commands. Core integration uses the planned `kb` sidecar boundary. |
 
 The package README files are intentionally short because npm displays each package README
 separately. They point npm readers back to this GitHub documentation.

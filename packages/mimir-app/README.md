@@ -15,3 +15,6 @@ pnpm --filter @jcode.labs/mimir-app tauri:android:dev
 
 The app uses `@jcode.labs/mimir-ui` for shared styling and should keep privacy controls visible by
 default.
+
+Mimir Core integration is a Node sidecar around the existing `kb` CLI/MCP surface. See
+[`../../docs/app-sidecar-architecture.md`](../../docs/app-sidecar-architecture.md).

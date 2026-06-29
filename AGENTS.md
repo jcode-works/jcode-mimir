@@ -118,6 +118,9 @@ General principles (KISS, DRY, YAGNI, SOLID) as applied in this codebase. Match 
   product surfaces.
 - `packages/mimir-landing` owns the static Astro landing page.
 - `packages/mimir-app` owns the Tauri app shell for desktop and mobile.
+- The app integrates Mimir Core through a Node sidecar around the existing `kb` CLI/MCP surface.
+  Keep the decision and command allowlist in `docs/app-sidecar-architecture.md`; do not add
+  Tauri `externalBin` entries until real platform sidecar binaries exist.
 - `packages/mimir-core/src/gitignore.ts` owns target-repository `.gitignore` entries for local generated Mimir
   state.
 - `packages/mimir-core/src/security.ts`, `packages/mimir-core/src/redaction.ts`, and
