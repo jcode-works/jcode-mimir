@@ -6,6 +6,7 @@ import { loadConfig } from "./config.js";
 import { destroyIndex } from "./destroy.js";
 import { doctor } from "./doctor.js";
 import { pullEmbeddingModel } from "./embeddings.js";
+import { evaluateGoldenQueries } from "./evaluate.js";
 import { audit, ingest } from "./ingest.js";
 import { initProject } from "./init.js";
 import { serveMcp } from "./mcp.js";
@@ -209,6 +210,42 @@ program
         for (const [index, source] of result.sources.entries()) {
             console.log(`  [${index + 1}] ${source.relativePath} chunk=${source.chunkIndex}`);
         }
+    }
+});
+program
+    .command("evaluate")
+    .description("Measure retrieval recall against a JSON golden query file.")
+    .requiredOption("--golden <path>", "JSON file with queries and expected relative source paths.")
+    .option("-k, --top-k <number>", "Default number of passages to evaluate per query.", parsePositiveInt)
+    .option("--json", "Print machine-readable JSON.")
+    .action(async (options, command) => {
+    const cwd = projectRoot(command);
+    const evaluationOptions = {
+        cwd,
+        goldenPath: options.golden,
+    };
+    addOption(evaluationOptions, "topK", options.topK);
+    const result = await evaluateGoldenQueries(evaluationOptions);
+    if (options.json) {
+        console.log(JSON.stringify(result, null, 2));
+        if (result.misses > 0) {
+            process.exitCode = 1;
+        }
+        return;
+    }
+    console.log(`golden=${result.goldenPath} total=${result.total} hits=${result.hits} misses=${result.misses} recall=${result.recall.toFixed(3)}`);
+    for (const testCase of result.cases) {
+        const label = testCase.id ? `${testCase.id}: ${testCase.query}` : testCase.query;
+        const status = testCase.hit ? pc.green("hit") : pc.red("miss");
+        const rank = testCase.bestRank === null ? "n/a" : String(testCase.bestRank);
+        console.log(`${status} rank=${rank} topK=${testCase.topK} ${label}`);
+        if (!testCase.hit) {
+            console.log(`  expected=${testCase.expectedPaths.join(",")}`);
+            console.log(`  returned=${testCase.returnedPaths.join(",")}`);
+        }
+    }
+    if (result.misses > 0) {
+        process.exitCode = 1;
     }
 });
 program

@@ -21,6 +21,7 @@ Mimir ships two CLIs:
 | `mimir audit --unsupported` | List files skipped because they are unsupported, too large, or secret-like. |
 | `mimir search "<query>"` | Retrieve ranked passages without asking an LLM to write an answer. |
 | `mimir ask "<question>"` | Return cited retrieval context for an agent or trusted model runtime. |
+| `mimir evaluate --golden golden-queries.json` | Measure retrieval recall against expected source paths. |
 | `mimir security-audit` | Inspect privacy posture: telemetry, providers, redaction, Git ignore, MCP. |
 | `mimir status` | Print raw config paths, provider settings, and indexed chunk count. |
 
@@ -55,8 +56,8 @@ Mimir ships two CLIs:
 | Option | Applies to | Meaning |
 | --- | --- | --- |
 | `--project-root <path>` | all project-scoped `mimir` commands | Run against a specific local workspace instead of the current directory. |
-| `--top-k <number>` | `search`, `ask` | Number of passages to return. |
-| `--json` | `doctor`, `ingest`, `search`, `ask`, `audit`, `status`, `security-audit`, `audio --doctor`, `mimir-tts doctor` | Print machine-readable JSON. |
+| `--top-k <number>` | `search`, `ask`, `evaluate` | Number of passages to return. |
+| `--json` | `doctor`, `ingest`, `search`, `ask`, `evaluate`, `audit`, `status`, `security-audit`, `audio --doctor`, `mimir-tts doctor` | Print machine-readable JSON. |
 | `--unsupported` | `audit` | List skipped file paths and reasons. |
 | `--strict` | `security-audit` | Exit non-zero when warnings exist. |
 | `--offline` | `audio`, `mimir-tts render` | Disable remote model downloads and force the local Transformers.js path. |

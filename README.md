@@ -257,6 +257,12 @@ Return cited retrieval context for an agent or model:
 pnpm exec mimir ask "What evidence supports offline operation?"
 ```
 
+Measure recall against a golden query file:
+
+```bash
+pnpm exec mimir evaluate --golden golden-queries.json
+```
+
 Mimir does not synthesize an LLM answer. It returns cited local passages; your chosen agent or model
 does the writing around those passages.
 
@@ -632,6 +638,7 @@ cd packages/mimir-core/examples/sovereign-rag-demo
 node ../../dist/cli.js security-audit
 node ../../dist/cli.js ingest
 node ../../dist/cli.js search "offline retrieval approval"
+node ../../dist/cli.js evaluate --golden golden-queries.json
 node ../../dist/cli.js audit
 ```
 

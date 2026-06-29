@@ -120,6 +120,13 @@ For each question, record privately:
 | Agent result | Pass, partial, fail, or refused due to missing evidence. |
 | Friction | Sanitized summary only. |
 
+When a private run has a reusable set of expected sources, keep the golden query file outside Git and
+measure it locally:
+
+```bash
+mimir evaluate --golden private/mimir-golden-queries.json --json
+```
+
 Public summary format:
 
 ```plain text

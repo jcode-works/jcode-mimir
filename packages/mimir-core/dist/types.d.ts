@@ -117,6 +117,36 @@ export interface SearchResult {
     text: string;
     distance: number | null;
 }
+export interface GoldenQuery {
+    id?: string;
+    query: string;
+    expectedPaths: string[];
+    topK?: number;
+}
+export interface EvaluationOptions {
+    cwd?: PathLike;
+    goldenPath: PathLike;
+    topK?: number;
+}
+export interface EvaluationCaseResult {
+    id?: string;
+    query: string;
+    expectedPaths: string[];
+    topK: number;
+    returnedPaths: string[];
+    matchedPaths: string[];
+    hit: boolean;
+    bestRank: number | null;
+}
+export interface EvaluationResult {
+    goldenPath: string;
+    topK: number;
+    total: number;
+    hits: number;
+    misses: number;
+    recall: number;
+    cases: EvaluationCaseResult[];
+}
 export interface AskResult {
     answer: string;
     sources: SearchResult[];
