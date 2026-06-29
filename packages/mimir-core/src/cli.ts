@@ -10,7 +10,7 @@ import { evaluateGoldenQueries } from "./evaluate.js"
 import { audit, ingest } from "./ingest.js"
 import { initProject } from "./init.js"
 import { serveMcp } from "./mcp.js"
-import { kbCommand } from "./package-manager.js"
+import { mimirCommand } from "./package-manager.js"
 import { ask, search } from "./query.js"
 import { securityAudit } from "./security.js"
 import { enableSemanticEmbeddings } from "./semantic-config.js"
@@ -135,7 +135,7 @@ program
     const created = await initProject(cwd)
     if (created.length === 0) {
       console.log(pc.green("Already initialized."))
-      const doctorCommand = await kbCommand(cwd, ["doctor"])
+      const doctorCommand = await mimirCommand(cwd, ["doctor"])
       console.log(`Run \`${doctorCommand.display}\` to check readiness.`)
       return
     }
@@ -143,9 +143,9 @@ program
     for (const file of created) {
       console.log(`  - ${file}`)
     }
-    const ingestCommand = await kbCommand(cwd, ["ingest"])
-    const doctorCommand = await kbCommand(cwd, ["doctor"])
-    const searchCommand = await kbCommand(cwd, ["search", "your question"])
+    const ingestCommand = await mimirCommand(cwd, ["ingest"])
+    const doctorCommand = await mimirCommand(cwd, ["doctor"])
+    const searchCommand = await mimirCommand(cwd, ["search", "your question"])
     console.log("")
     console.log(pc.cyan("Next steps:"))
     console.log("  1. Add supported documents under private/")
@@ -179,7 +179,7 @@ program
     )
     printUnsupportedSummary(result.unsupportedExtensions)
     if (result.unsupportedFiles > 0 || result.oversizedFiles > 0 || result.sensitiveFiles > 0) {
-      const auditCommand = await kbCommand(cwd, ["audit", "--unsupported"])
+      const auditCommand = await mimirCommand(cwd, ["audit", "--unsupported"])
       console.log(
         pc.yellow(`Some files were not indexed. Run \`${auditCommand.display}\` for details.`),
       )
@@ -210,7 +210,7 @@ program
     }
 
     if (results.length === 0) {
-      const repairCommand = await kbCommand(cwd, ["doctor", "--fix"])
+      const repairCommand = await mimirCommand(cwd, ["doctor", "--fix"])
       console.error(pc.yellow(`No results. Add documents or run \`${repairCommand.display}\`.`))
       process.exitCode = 1
       return
@@ -527,7 +527,7 @@ program
   .action(async (options: { targetDir: string }, command: Command) => {
     const cwd = projectRoot(command)
     const result = await installSkill({ cwd, targetDir: options.targetDir })
-    const doctorCommand = await kbCommand(cwd, ["doctor"])
+    const doctorCommand = await mimirCommand(cwd, ["doctor"])
     console.log("Installed Mimir agent kit:")
     for (const file of result.written) {
       console.log(`  - ${file}`)
@@ -596,7 +596,7 @@ program
       console.log(
         "  3. Wire the matching MCP helper if the agent should call Mimir tools directly.",
       )
-      console.log(`  4. Run \`${(await kbCommand(cwd, ["doctor"])).display}\`.`)
+      console.log(`  4. Run \`${(await mimirCommand(cwd, ["doctor"])).display}\`.`)
     },
   )
 

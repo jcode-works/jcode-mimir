@@ -2,7 +2,7 @@ import path from "node:path"
 import { doctor } from "./doctor.js"
 import { ingest } from "./ingest.js"
 import { initProject } from "./init.js"
-import { kbCommand, type PackageManager } from "./package-manager.js"
+import { mimirCommand, type PackageManager } from "./package-manager.js"
 import { type InstallSkillResult, installSkill } from "./skill.js"
 import type { DoctorReport, IngestResult } from "./types.js"
 
@@ -39,7 +39,7 @@ export async function setupProject(options: SetupOptions = {}): Promise<SetupRes
     report = await doctor(cwd)
   }
 
-  const command = await kbCommand(cwd, ["doctor"])
+  const command = await mimirCommand(cwd, ["doctor"])
 
   return {
     projectRoot: report.projectRoot,

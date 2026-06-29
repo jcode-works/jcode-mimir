@@ -3,7 +3,7 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { DEFAULT_SKILL_TARGET_DIR, MIMIR_DIR } from "./defaults.js"
 import { ensureMimirGitignore } from "./gitignore.js"
-import { kbCommand } from "./package-manager.js"
+import { mimirCommand } from "./package-manager.js"
 
 export type AgentTarget = "claude" | "codex" | "kimi" | "opencode" | "cline"
 export type AgentInstallScope = "project" | "user"
@@ -179,9 +179,9 @@ export async function installSkill(options: InstallSkillOptions = {}): Promise<I
   await mkdir(mimirDir, { recursive: true })
   await copyBundledSkills(targetDir)
 
-  const serveCommand = await kbCommand(cwd, ["serve-mcp"])
-  const doctorCommand = await kbCommand(cwd, ["doctor"])
-  const installAgentCommand = await kbCommand(cwd, ["install-agent", "--agents", "claude,kimi"])
+  const serveCommand = await mimirCommand(cwd, ["serve-mcp"])
+  const doctorCommand = await mimirCommand(cwd, ["doctor"])
+  const installAgentCommand = await mimirCommand(cwd, ["install-agent", "--agents", "claude,kimi"])
   await writeFile(
     mcpConfigPath,
     `${JSON.stringify(mcpConfig(cwd, serveCommand), null, 2)}\n`,
@@ -422,7 +422,7 @@ function displayPath(cwd: string, filePath: string): string {
 
 function mcpConfig(
   cwd: string,
-  serveCommand: Awaited<ReturnType<typeof kbCommand>>,
+  serveCommand: Awaited<ReturnType<typeof mimirCommand>>,
   env?: Record<string, string>,
 ): unknown {
   const config: {
@@ -449,7 +449,7 @@ function mcpConfig(
   return config
 }
 
-function claudeMcpServer(serveCommand: Awaited<ReturnType<typeof kbCommand>>): unknown {
+function claudeMcpServer(serveCommand: Awaited<ReturnType<typeof mimirCommand>>): unknown {
   return {
     type: "stdio",
     command: serveCommand.command,
@@ -457,7 +457,10 @@ function claudeMcpServer(serveCommand: Awaited<ReturnType<typeof kbCommand>>): u
   }
 }
 
-function codexMcpConfig(cwd: string, serveCommand: Awaited<ReturnType<typeof kbCommand>>): string {
+function codexMcpConfig(
+  cwd: string,
+  serveCommand: Awaited<ReturnType<typeof mimirCommand>>,
+): string {
   return `[mcp_servers.mimir]
 command = ${tomlString(serveCommand.command)}
 args = ${tomlArray(serveCommand.args)}
@@ -482,7 +485,10 @@ enabled = true
 `
 }
 
-function opencodeConfig(cwd: string, serveCommand: Awaited<ReturnType<typeof kbCommand>>): string {
+function opencodeConfig(
+  cwd: string,
+  serveCommand: Awaited<ReturnType<typeof mimirCommand>>,
+): string {
   const config = {
     $schema: "https://opencode.ai/config.json",
     mcp: {

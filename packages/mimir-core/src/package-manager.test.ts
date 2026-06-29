@@ -2,7 +2,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
-import { detectPackageManager, kbCommand } from "./package-manager.js"
+import { detectPackageManager, kbCommand, mimirCommand } from "./package-manager.js"
 
 const tempDirs: string[] = []
 
@@ -18,7 +18,7 @@ describe("package manager detection", () => {
     tempDirs.push(root)
 
     expect(await detectPackageManager(root)).toBe("pnpm")
-    await expect(kbCommand(root, ["doctor"])).resolves.toMatchObject({
+    await expect(mimirCommand(root, ["doctor"])).resolves.toMatchObject({
       command: "pnpm",
       args: ["exec", "mimir", "doctor"],
       display: "pnpm exec mimir doctor",
@@ -32,7 +32,7 @@ describe("package manager detection", () => {
     await writeFile(path.join(root, "pnpm-lock.yaml"), "lockfileVersion: 9.0\n", "utf8")
 
     expect(await detectPackageManager(root)).toBe("npm")
-    await expect(kbCommand(root, ["serve-mcp"])).resolves.toMatchObject({
+    await expect(mimirCommand(root, ["serve-mcp"])).resolves.toMatchObject({
       command: "npx",
       args: ["mimir", "serve-mcp"],
       display: "npx mimir serve-mcp",
@@ -48,5 +48,9 @@ describe("package manager detection", () => {
 
     expect(await detectPackageManager(bunRoot)).toBe("bun")
     expect(await detectPackageManager(yarnRoot)).toBe("yarn")
+  })
+
+  it("keeps kbCommand as a legacy compatibility alias", () => {
+    expect(kbCommand).toBe(mimirCommand)
   })
 })

@@ -23,7 +23,7 @@ export async function detectPackageManager(cwd = process.cwd()) {
     }
     return "pnpm";
 }
-export async function kbCommand(cwd, args) {
+export async function mimirCommand(cwd, args) {
     const packageManager = await detectPackageManager(cwd);
     const commandArgs = commandArgsFor(packageManager, args);
     return {
@@ -33,6 +33,7 @@ export async function kbCommand(cwd, args) {
         display: displayCommand(packageManager, args),
     };
 }
+export const kbCommand = mimirCommand;
 async function packageJsonManager(root) {
     const packageJsonPath = path.join(root, "package.json");
     if (!existsSync(packageJsonPath)) {

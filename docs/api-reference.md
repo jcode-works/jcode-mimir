@@ -316,16 +316,18 @@ MCP tools exposed by the server:
 
 Detects `pnpm`, `npm`, `yarn`, or `bun` from package metadata and lockfiles.
 
-### `kbCommand(cwd, args)`
+### `mimirCommand(cwd, args)`
 
 Builds the package-manager-specific command that runs `mimir`.
 
 ```ts
-import { kbCommand } from "@jcode.labs/mimir"
+import { mimirCommand } from "@jcode.labs/mimir"
 
-const command = await kbCommand("/path/to/workspace", ["doctor"])
+const command = await mimirCommand("/path/to/workspace", ["doctor"])
 console.log(command.display)
 ```
+
+`kbCommand` remains available as a legacy compatibility alias.
 
 ## Version
 

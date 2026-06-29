@@ -2,7 +2,7 @@ import path from "node:path";
 import { doctor } from "./doctor.js";
 import { ingest } from "./ingest.js";
 import { initProject } from "./init.js";
-import { kbCommand } from "./package-manager.js";
+import { mimirCommand } from "./package-manager.js";
 import { installSkill } from "./skill.js";
 export async function setupProject(options = {}) {
     const cwd = path.resolve(options.cwd ?? process.cwd());
@@ -18,7 +18,7 @@ export async function setupProject(options = {}) {
         ingested = await ingest({ cwd });
         report = await doctor(cwd);
     }
-    const command = await kbCommand(cwd, ["doctor"]);
+    const command = await mimirCommand(cwd, ["doctor"]);
     return {
         projectRoot: report.projectRoot,
         packageManager: command.packageManager,

@@ -5,12 +5,14 @@ import path from "node:path"
 export type PackageManager = "pnpm" | "npm" | "yarn" | "bun"
 const MIMIR_CLI_BIN = "mimir"
 
-export interface KbCommand {
+export interface MimirCommand {
   packageManager: PackageManager
   command: string
   args: string[]
   display: string
 }
+
+export type KbCommand = MimirCommand
 
 export async function detectPackageManager(cwd = process.cwd()): Promise<PackageManager> {
   const root = path.resolve(cwd)
@@ -36,7 +38,7 @@ export async function detectPackageManager(cwd = process.cwd()): Promise<Package
   return "pnpm"
 }
 
-export async function kbCommand(cwd: string, args: string[]): Promise<KbCommand> {
+export async function mimirCommand(cwd: string, args: string[]): Promise<MimirCommand> {
   const packageManager = await detectPackageManager(cwd)
   const commandArgs = commandArgsFor(packageManager, args)
   return {
@@ -46,6 +48,8 @@ export async function kbCommand(cwd: string, args: string[]): Promise<KbCommand>
     display: displayCommand(packageManager, args),
   }
 }
+
+export const kbCommand = mimirCommand
 
 async function packageJsonManager(root: string): Promise<PackageManager | null> {
   const packageJsonPath = path.join(root, "package.json")

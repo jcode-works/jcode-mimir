@@ -6,7 +6,7 @@ export { evaluateGoldenQueries } from "./evaluate.js";
 export { audit, ingest } from "./ingest.js";
 export { initProject } from "./init.js";
 export { serveMcp } from "./mcp.js";
-export { detectPackageManager, kbCommand } from "./package-manager.js";
+export { detectPackageManager, kbCommand, mimirCommand } from "./package-manager.js";
 export { ask, search } from "./query.js";
 export { redactText } from "./redaction.js";
 export { securityAudit } from "./security.js";

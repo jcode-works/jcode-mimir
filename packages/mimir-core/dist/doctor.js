@@ -3,14 +3,14 @@ import path from "node:path";
 import { findProjectRoot, loadConfig } from "./config.js";
 import { CONFIG_PATH, MIMIR_DIR } from "./defaults.js";
 import { audit } from "./ingest.js";
-import { kbCommand } from "./package-manager.js";
+import { mimirCommand } from "./package-manager.js";
 import { securityAudit } from "./security.js";
 import { countRows } from "./store.js";
 export async function doctor(cwd = process.cwd()) {
     const projectRoot = findProjectRoot(cwd);
     const initialized = existsSync(path.join(projectRoot, CONFIG_PATH));
     const config = await loadConfig(cwd);
-    const command = await kbCommand(projectRoot, []);
+    const command = await mimirCommand(projectRoot, []);
     const agentKitInstalled = isAgentKitInstalled(projectRoot);
     const [auditReport, securityReport, chunksIndexed] = await Promise.all([
         audit(projectRoot),
