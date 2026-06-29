@@ -1,5 +1,9 @@
 import { spawnSync } from "node:child_process"
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
 
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
+const UPDATER_GUARD_SCRIPT = join(SCRIPT_DIR, "updater-guard.mjs")
 const TARGETS = new Set(["macos", "windows", "linux", "android"])
 const args = parseArgs(process.argv.slice(2))
 const target = args.target ?? currentTarget()
@@ -29,6 +33,7 @@ function releaseChecks(releaseTarget) {
     commandCheck("cargo", ["--version"], "Rust/Cargo toolchain"),
     commandCheck("rustc", ["--version"], "Rust compiler"),
     commandCheck("pnpm", ["exec", "tauri", "--version"], "Tauri CLI"),
+    updaterGuardCheck(releaseTarget),
   ]
 
   if (releaseTarget === "macos") {
@@ -75,6 +80,14 @@ function commandCheck(command, commandArgs, label) {
   }
 }
 
+function updaterGuardCheck(releaseTarget) {
+  const commandArgs = [UPDATER_GUARD_SCRIPT]
+  if (releaseTarget !== "android") {
+    commandArgs.push("--require-private-key")
+  }
+  return commandCheck(process.execPath, commandArgs, "Tauri updater configuration")
+}
+
 function platformCheck(expected, detail) {
   return {
     label: `platform ${expected}`,
@@ -115,6 +128,7 @@ function parseArgs(values) {
   const parsed = {}
   for (let index = 0; index < values.length; index += 1) {
     const value = values[index]
+    if (value === "--") continue
     if (!value?.startsWith("--")) continue
     const key = value.slice(2)
     const next = values[index + 1]

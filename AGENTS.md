@@ -68,6 +68,8 @@
   until a compliant non-store distribution path exists.
 - Keep direct-download packaging and updater rules in `docs/app-distribution.md`; do not wire the
   Tauri updater with placeholder keys or endpoints.
+- Keep `packages/mimir-app` `release:updater-guard` passing. It must fail on partial or placeholder
+  Tauri updater configuration and stay part of release preflight for direct-download packaging.
 - Native desktop CI artifacts may be built only through the manual `Native App Build` workflow. It
   uploads artifacts for inspection but must not create GitHub releases, deploy, publish, or bypass
   signing/checksum requirements.
