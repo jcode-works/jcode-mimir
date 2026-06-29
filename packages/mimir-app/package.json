@@ -17,6 +17,7 @@
     "release:checksums": "node scripts/native-checksums.mjs",
     "release:preflight": "node scripts/release-preflight.mjs",
     "release:updater-guard": "node scripts/updater-guard.mjs",
+    "release:updater-guard:smoke": "node scripts/updater-guard-smoke.mjs",
     "tauri": "tauri",
     "tauri:android:build": "tauri android build --apk",
     "tauri:android:dev": "tauri android dev",

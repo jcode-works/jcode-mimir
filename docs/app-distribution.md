@@ -42,6 +42,9 @@ Before publishing a public direct download:
   on the matching release machine before building native artifacts.
 - Run `pnpm --filter @jcode.labs/mimir-app release:updater-guard` whenever Tauri updater config
   changes; `release:preflight` also runs the guard before native packaging.
+- Run `pnpm --filter @jcode.labs/mimir-app release:updater-guard:smoke` after changing the guard
+  logic; it verifies the disabled, placeholder, and fully configured updater paths with temporary
+  synthetic config files.
 - Build the target platform artifact on the matching release machine or CI runner.
 - Sign macOS and Windows artifacts with release credentials that are never committed.
 - Generate checksums with `pnpm --filter @jcode.labs/mimir-app release:checksums` and publish
