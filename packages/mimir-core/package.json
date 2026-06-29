@@ -57,6 +57,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",
+    "mcp:smoke": "pnpm build && node scripts/mcp-smoke.mjs",
     "package:check": "publint",
     "test": "vitest run"
   },

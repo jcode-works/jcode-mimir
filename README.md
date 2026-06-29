@@ -639,6 +639,7 @@ Useful filtered commands:
 
 ```bash
 pnpm --filter @jcode.labs/mimir test
+pnpm --filter @jcode.labs/mimir mcp:smoke
 pnpm --filter @jcode.labs/mimir-tts test
 pnpm --filter @jcode.labs/mimir-app build
 pnpm --filter @jcode.labs/mimir-landing build

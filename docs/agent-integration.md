@@ -56,6 +56,12 @@ Start the MCP server from the repository root:
 pnpm exec mimir serve-mcp
 ```
 
+For a repository-level protocol smoke test, run the synthetic demo client:
+
+```bash
+pnpm --filter @jcode.labs/mimir mcp:smoke
+```
+
 MCP tools exposed:
 
 - `mimir_status`
