@@ -692,6 +692,8 @@ pnpm --dir packages/mimir-core pack
 
 - [`SECURITY-HARDENING.md`](./SECURITY-HARDENING.md): threat model, offline operation, release
   verification, and high-assurance deployment notes.
+- [`docs/fr-eu-sovereign-positioning.md`](./docs/fr-eu-sovereign-positioning.md): bounded FR/EU
+  sovereignty, GDPR, AI Act, and legal-vertical positioning.
 - [`docs/ux-dx-audit.md`](./docs/ux-dx-audit.md): current UX/DX findings, fixes, and remaining
   product risks.
 

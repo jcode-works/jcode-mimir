@@ -30,6 +30,11 @@ Primary v1 buyer:
 Do not spend v1 sales effort on legal professionals until the developer/consultant segment has been
 validated. The legal vertical stays a later packaging decision.
 
+When that vertical is tested, use the bounded positioning and interview script in
+[`fr-eu-sovereign-positioning.md`](./fr-eu-sovereign-positioning.md). Do not claim legal advice,
+blanket GDPR compliance, AI Act compliance, or regulated sovereignty certification without a separate
+review.
+
 ## Interview Script
 
 Run interviews as problem discovery first, pricing second:

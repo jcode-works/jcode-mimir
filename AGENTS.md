@@ -25,6 +25,9 @@
 - Keep public positioning focused on sovereign local RAG for confidential datasets and AI agents.
   Avoid claiming universal binary-file support; unsupported proprietary formats need extraction or
   dedicated parsers.
+- Keep FR/EU sovereignty, GDPR, AI Act, and legal-vertical claims bounded by
+  `docs/fr-eu-sovereign-positioning.md`. Do not claim blanket compliance, legal advice, or regulated
+  sovereignty certification without a separate review.
 - Keep first-run UX centered on `mimir setup` for full onboarding and `mimir doctor --fix` for safe
   repairs. `mimir init`, `mimir install-skill`, and `mimir ingest` remain available as explicit
   lower-level commands.

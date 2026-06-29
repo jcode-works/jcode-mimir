@@ -6,6 +6,8 @@ Initial paid product: **Mimir Desktop** for developers, consultants, and small t
 confidential dossiers.
 
 The free/paid product boundary is defined in [`open-core-boundary.md`](./open-core-boundary.md).
+FR/EU privacy, sovereignty, and legal-vertical claims are bounded in
+[`fr-eu-sovereign-positioning.md`](./fr-eu-sovereign-positioning.md).
 
 | Plan | Price to test | Notes |
 | --- | --- | --- |
