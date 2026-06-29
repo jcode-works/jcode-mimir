@@ -66,8 +66,10 @@
 - `packages/mimir-app/src/lib/project-registry.ts` owns the app-side local project registry. Store
   selected project roots there and derive `private/` plus `.kb/storage`; keep ingest/query/index
   truth in Mimir Core through the sidecar/CLI surface.
-- The app's watched-folder feature is an opt-in polling layer over `mimir ingest`; do not add cloud
-  sync assumptions or background daemons unless the plan explicitly changes.
+- The app's watched-folder feature is an opt-in polling layer over `mimir ingest`; do not add
+  background daemons unless the plan explicitly changes. The first Google Drive connector is an
+  opt-in local-sync folder flow using Google Drive for desktop files already present on disk; do not
+  add OAuth, Drive API calls, or cloud credentials by default.
 - Keep optional audio summaries separate from core ingestion/query behavior. The
   `mimir-audio-summary` skill must prefer `mimir audio` / `@jcode.labs/mimir-tts`, default to the
   Transformers.js WAV path for offline/confidential rendering, use the Edge MP3 path for global

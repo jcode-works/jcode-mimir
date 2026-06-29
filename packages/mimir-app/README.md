@@ -33,6 +33,10 @@ Registered projects can opt into watched-folder mode from the Projects view. Thi
 layer over incremental `mimir ingest`: it re-indexes the selected project every 5 minutes, stores the
 setting only in local app storage, and does not add a cloud connector or background daemon.
 
+Google Drive support is intentionally implemented as a local-sync connector: select the folder made
+available on disk by Google Drive for desktop, and the app marks it as a Google Drive source with
+local auto-ingest enabled. It does not use OAuth, call the Drive API, or store Google credentials.
+
 ## Distribution
 
 The app is designed for direct downloads and sideloadable installers, not App Store or Play Store

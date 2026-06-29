@@ -4,11 +4,13 @@ const WINDOWS_DRIVE_ROOT_PATTERN = /^[A-Za-z]:[\\/]?$/u
 const TRAILING_SEPARATOR_PATTERN = /[\\/]+$/u
 
 export type ProjectStatus = "needs-setup" | "ready" | "indexing" | "needs-review"
+export type ProjectSourceKind = "local-folder" | "google-drive"
 
 export interface MimirProject {
   id: string
   name: string
   projectRoot: string
+  sourceKind: ProjectSourceKind
   rawDir: string
   storageDir: string
   filesIndexed: number
@@ -20,12 +22,21 @@ export interface MimirProject {
   updatedAt: string
 }
 
-type StoredMimirProject = Omit<MimirProject, "autoIngestEnabled" | "lastAutoIngestAt"> & {
+type StoredMimirProject = Omit<
+  MimirProject,
+  "sourceKind" | "autoIngestEnabled" | "lastAutoIngestAt"
+> & {
+  sourceKind?: ProjectSourceKind
   autoIngestEnabled?: boolean
   lastAutoIngestAt?: string | null
 }
 
-export function createProject(input: { projectRoot: string; name?: string }): MimirProject {
+export function createProject(input: {
+  projectRoot: string
+  name?: string
+  sourceKind?: ProjectSourceKind
+  autoIngestEnabled?: boolean
+}): MimirProject {
   const projectRoot = normalizeProjectRoot(input.projectRoot)
   if (!projectRoot) {
     throw new Error("Project root is required.")
@@ -36,13 +47,14 @@ export function createProject(input: { projectRoot: string; name?: string }): Mi
     id: createProjectId(projectRoot),
     name: input.name?.trim() || projectNameFromRoot(projectRoot),
     projectRoot,
+    sourceKind: input.sourceKind ?? "local-folder",
     rawDir: joinProjectPath(projectRoot, "private"),
     storageDir: joinProjectPath(projectRoot, ".kb", "storage"),
     filesIndexed: 0,
     chunksIndexed: 0,
     progress: 0,
     status: "needs-setup",
-    autoIngestEnabled: false,
+    autoIngestEnabled: input.autoIngestEnabled ?? false,
     lastAutoIngestAt: null,
     updatedAt: now,
   }
@@ -150,6 +162,7 @@ export function joinProjectPath(projectRoot: string, ...segments: string[]): str
 function normalizeStoredProject(project: StoredMimirProject): MimirProject {
   return {
     ...project,
+    sourceKind: project.sourceKind ?? "local-folder",
     autoIngestEnabled: project.autoIngestEnabled ?? false,
     lastAutoIngestAt: project.lastAutoIngestAt ?? null,
   }
@@ -163,6 +176,7 @@ function isStoredMimirProject(value: unknown): value is StoredMimirProject {
     typeof value.id === "string" &&
     typeof value.name === "string" &&
     typeof value.projectRoot === "string" &&
+    (value.sourceKind === undefined || isProjectSourceKind(value.sourceKind)) &&
     typeof value.rawDir === "string" &&
     typeof value.storageDir === "string" &&
     typeof value.filesIndexed === "number" &&
@@ -175,6 +189,10 @@ function isStoredMimirProject(value: unknown): value is StoredMimirProject {
       typeof value.lastAutoIngestAt === "string") &&
     typeof value.updatedAt === "string"
   )
+}
+
+function isProjectSourceKind(value: unknown): value is ProjectSourceKind {
+  return value === "local-folder" || value === "google-drive"
 }
 
 function isProjectStatus(value: unknown): value is ProjectStatus {

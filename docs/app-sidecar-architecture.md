@@ -69,10 +69,14 @@ For watched folders, the app does not expose a broader filesystem watcher. It st
 per registered local project and periodically calls the existing incremental `mimir ingest --json`
 workflow through the same bounded command surface.
 
+The Google Drive connector is the same local path flow with a distinct source label: the user selects
+a folder already synchronized by Google Drive for desktop, and the app enables local auto-ingest for
+that folder. It does not add OAuth, Drive API calls, or provider credentials to the sidecar surface.
+
 ## Deferred Work
 
 - Native sidecar binary build pipeline.
 - Progress events for long ingests.
 - Signed macOS/Windows packaging.
 - Tauri updater wiring after release signing keys and update endpoint are ready.
-- Google Drive connector.
+- Hosted cloud connector APIs beyond local sync folders.

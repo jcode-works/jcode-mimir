@@ -75,7 +75,8 @@ portable agent skills.
 A cross-platform Mimir desktop/mobile client is being developed in `packages/mimir-app`. Its goal is
 to make local confidential workspaces easier for non-CLI workflows: register a local dossier, run
 setup and ingest, ask questions with cited local passages, inspect privacy posture, and preload
-embedding models explicitly.
+embedding models explicitly. Google Drive support is implemented as an opt-in local-sync folder flow
+over files already present on disk, not as a default cloud API integration.
 
 The native client is not released, signed, or sold yet. There is no checkout, waitlist, or hosted
 account flow in this repository. When released, it is planned for direct downloads and sideloadable

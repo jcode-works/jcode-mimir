@@ -14,6 +14,7 @@ import {
   Activity,
   Brain,
   CheckCircle2,
+  Cloud,
   Database,
   Download,
   ExternalLink,
@@ -59,6 +60,7 @@ import {
   loadProjects,
   type MimirProject,
   normalizeProjectRoot,
+  type ProjectSourceKind,
   type ProjectStatus,
   removeProject,
   saveActiveProjectId,
@@ -80,6 +82,7 @@ export function App(): React.JSX.Element {
   const [projects, setProjects] = useState<MimirProject[]>(() => loadProjects())
   const [activeProjectId, setActiveProjectId] = useState<string | null>(() => loadActiveProjectId())
   const [projectRoot, setProjectRoot] = useState("")
+  const [googleDriveRoot, setGoogleDriveRoot] = useState("")
   const [dropStatus, setDropStatus] = useState("Drop a folder or paste its local path.")
   const [runtimeMessage, setRuntimeMessage] = useState("Native Mimir runtime is idle.")
   const [isRunning, setIsRunning] = useState(false)
@@ -143,14 +146,31 @@ export function App(): React.JSX.Element {
     saveActiveProjectId(firstProjectId)
   }, [activeProjectId, projects])
 
-  function registerProject(root: string): void {
+  function registerProject(
+    root: string,
+    sourceKind: ProjectSourceKind = "local-folder",
+    autoIngestEnabled = false,
+  ): void {
     const normalizedRoot = normalizeProjectRoot(root)
     const existingProject = projects.find((project) => project.projectRoot === normalizedRoot)
-    const project = existingProject ?? createProject({ projectRoot: normalizedRoot })
+    const now = new Date().toISOString()
+    const project = existingProject
+      ? {
+          ...existingProject,
+          sourceKind,
+          autoIngestEnabled: autoIngestEnabled || existingProject.autoIngestEnabled,
+          updatedAt: now,
+        }
+      : createProject({ projectRoot: normalizedRoot, sourceKind, autoIngestEnabled })
     setProjects((currentProjects) => upsertProject(currentProjects, project))
     selectProject(project.id)
     setProjectRoot("")
-    setDropStatus(`${project.name} is registered locally.`)
+    setGoogleDriveRoot("")
+    setDropStatus(
+      sourceKind === "google-drive"
+        ? `${project.name} is connected as an opt-in Google Drive sync folder.`
+        : `${project.name} is registered locally.`,
+    )
   }
 
   function handleProjectSubmit(event: FormEvent<HTMLFormElement>): void {
@@ -159,6 +179,18 @@ export function App(): React.JSX.Element {
       registerProject(projectRoot)
     } catch (error) {
       setDropStatus(error instanceof Error ? error.message : "Project root is required.")
+    }
+  }
+
+  function handleGoogleDriveSubmit(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault()
+    try {
+      registerProject(googleDriveRoot, "google-drive", true)
+      setRuntimeMessage("Google Drive sync folder connected. Auto-ingest is enabled locally.")
+    } catch (error) {
+      setDropStatus(
+        error instanceof Error ? error.message : "Google Drive folder path is required.",
+      )
     }
   }
 
@@ -523,7 +555,10 @@ export function App(): React.JSX.Element {
               dropStatus={dropStatus}
               isRunning={isRunning}
               onDrop={handleDrop}
+              googleDriveRoot={googleDriveRoot}
               onIngestProject={handleIngestProject}
+              onGoogleDriveRootChange={setGoogleDriveRoot}
+              onGoogleDriveSubmit={handleGoogleDriveSubmit}
               onPullModels={handlePullModels}
               onProjectRootChange={setProjectRoot}
               onProjectSubmit={handleProjectSubmit}
@@ -578,8 +613,11 @@ interface ProjectsViewProps {
   activeProjectId: string | null
   activeProject: MimirProject | null
   dropStatus: string
+  googleDriveRoot: string
   isRunning: boolean
   onDrop: (event: DragEvent<HTMLButtonElement>) => void
+  onGoogleDriveRootChange: (projectRoot: string) => void
+  onGoogleDriveSubmit: (event: FormEvent<HTMLFormElement>) => void
   onIngestProject: (project: MimirProject) => Promise<void>
   onPullModels: () => Promise<void>
   onProjectRootChange: (projectRoot: string) => void
@@ -598,8 +636,11 @@ function ProjectsView({
   activeProjectId,
   activeProject,
   dropStatus,
+  googleDriveRoot,
   isRunning,
   onDrop,
+  onGoogleDriveRootChange,
+  onGoogleDriveSubmit,
   onIngestProject,
   onPullModels,
   onProjectRootChange,
@@ -639,7 +680,10 @@ function ProjectsView({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="truncate font-semibold">{project.name}</p>
+                      <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <p className="truncate font-semibold">{project.name}</p>
+                        <Badge variant="outline">{projectSourceLabel(project.sourceKind)}</Badge>
+                      </div>
                       <p className="mt-1 truncate text-xs text-muted-foreground">
                         {project.projectRoot}
                       </p>
@@ -750,6 +794,36 @@ function ProjectsView({
               {dropStatus}
             </p>
           </button>
+
+          <div className="rounded-lg border border-border bg-background p-4">
+            <div className="grid gap-3 md:grid-cols-[auto_1fr]">
+              <div className="flex size-10 items-center justify-center rounded-full bg-card text-muted-foreground">
+                <Cloud className="size-5" aria-hidden="true" />
+              </div>
+              <div>
+                <p className="font-semibold">Google Drive local sync</p>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  Connect the local folder created by Google Drive for desktop. Mimir indexes only
+                  the files available on this machine and enables local auto-ingest for that folder.
+                </p>
+              </div>
+            </div>
+            <form
+              className="mt-4 grid gap-3 md:grid-cols-[1fr_auto]"
+              onSubmit={onGoogleDriveSubmit}
+            >
+              <Input
+                aria-label="Google Drive local sync folder"
+                onChange={(event) => onGoogleDriveRootChange(event.currentTarget.value)}
+                placeholder="/Users/me/Library/CloudStorage/GoogleDrive-me@example.com/My Drive/client-rfp"
+                value={googleDriveRoot}
+              />
+              <Button disabled={isRunning} type="submit" variant="outline">
+                <Cloud aria-hidden="true" />
+                Connect
+              </Button>
+            </form>
+          </div>
 
           <div className="rounded-lg border border-border bg-background p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1020,6 +1094,11 @@ function PrivacyView({
             title="Workspace"
             value={activeProject?.projectRoot ?? "Not selected"}
           />
+          <ControlTile
+            icon={<Cloud aria-hidden="true" />}
+            title="Source"
+            value={activeProject ? projectSourceLabel(activeProject.sourceKind) : "Local folder"}
+          />
         </CardContent>
       </Card>
     </div>
@@ -1138,6 +1217,11 @@ function privacyRows(
 }> {
   if (report) {
     return [
+      {
+        label: "Source",
+        value: project ? projectSourceLabel(project.sourceKind) : "No project selected",
+        state: project?.sourceKind === "google-drive" ? "warn" : "ok",
+      },
       { label: "Telemetry", value: "Off", state: report.zeroTelemetry ? "ok" : "warn" },
       {
         label: "Remote models",
@@ -1163,6 +1247,11 @@ function privacyRows(
   }
 
   return [
+    {
+      label: "Source",
+      value: project ? projectSourceLabel(project.sourceKind) : "No project selected",
+      state: project?.sourceKind === "google-drive" ? "warn" : "ok",
+    },
     { label: "Telemetry", value: "Off", state: "ok" },
     { label: "Remote models", value: "Disabled by default", state: "ok" },
     { label: "Redaction", value: "Before indexing", state: "ok" },
@@ -1214,9 +1303,11 @@ function autoIngestLabel(project: MimirProject): string {
   if (!project.autoIngestEnabled) {
     return "Manual ingest only."
   }
+  const source =
+    project.sourceKind === "google-drive" ? "Google Drive sync folder" : "Watched folder"
   return project.lastAutoIngestAt
-    ? `Watched folder, last auto-ingest ${formatDate(project.lastAutoIngestAt)}.`
-    : "Watched folder, first auto-ingest pending."
+    ? `${source}, last auto-ingest ${formatDate(project.lastAutoIngestAt)}.`
+    : `${source}, first auto-ingest pending.`
 }
 
 function licenseStatusLabel(validation: LicenseValidation): string {
@@ -1420,6 +1511,10 @@ function projectStatusLabel(status: ProjectStatus): string {
     case "needs-setup":
       return "Needs setup"
   }
+}
+
+function projectSourceLabel(sourceKind: ProjectSourceKind): string {
+  return sourceKind === "google-drive" ? "Google Drive sync" : "Local folder"
 }
 
 function statusBadge(status: ProjectStatus): "success" | "outline" {
