@@ -44,6 +44,7 @@ Mimir ships two CLIs:
 | Command | Use it when |
 | --- | --- |
 | `mimir audio --doctor` | Check TTS runtime readiness. |
+| `mimir audio /tmp/preload.txt --engine transformers --allow-remote-models --model-path .mimir/models/tts --out .mimir/audio/preload-check.wav` | Preload the TTS model with non-sensitive text. |
 | `mimir audio <file> --engine transformers --offline --out .mimir/audio/name.wav` | Render a confidential/offline WAV. |
 | `mimir audio <file> --engine edge --out .mimir/audio/name.mp3` | Render a higher-quality online Edge MP3. |
 | `mimir-tts doctor --json` | Inspect the standalone TTS package. |
@@ -61,6 +62,9 @@ Mimir ships two CLIs:
 | `--offline` | `audio`, `mimir-tts render` | Disable remote model downloads and force the local Transformers.js path. |
 | `--allow-remote-models` | `audio`, `mimir-tts render` | Explicitly allow model downloads for Transformers.js. |
 | `--engine edge` | `audio`, `mimir-tts render` | Use online Edge TTS for MP3 output. |
+
+See [`offline-tts-preload.md`](./offline-tts-preload.md) before using `--offline` on a fully
+air-gapped machine.
 
 ## OCR Configuration
 

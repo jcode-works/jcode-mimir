@@ -88,6 +88,9 @@
   Transformers.js WAV path for offline/confidential rendering, use the Edge MP3 path for global
   Voice Forge quality only when online TTS is explicitly acceptable, and keep generated audio under
   ignored local Mimir state.
+- Keep offline TTS preload explicit: use non-sensitive text for the first remote-model render that
+  warms `.mimir/models/tts`, then use `--offline` for confidential narration. The operational guide
+  lives in `docs/offline-tts-preload.md`.
 - Keep report generation separate from core retrieval. The `mimir-markdown-report` skill writes cited
   Markdown reports under ignored `.mimir/reports/` by default and must distinguish evidence,
   inference, uncertainty, missing documents, and professional-review items.

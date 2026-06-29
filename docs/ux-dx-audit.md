@@ -28,6 +28,7 @@ developer and agent workflow around installation, indexing, querying, safety, au
 | Report generation | Users had audio summaries but no dedicated Markdown-report workflow. | Fixed: `mimir-markdown-report` skill writes cited reports under ignored local state. |
 | Stale detection | Audit compared paths but did not detect changed file content. | Fixed: audit now uses stored checksums to flag stale indexed content. |
 | Semantic model preload | Users had to infer how to warm the Transformers.js cache. | Fixed: `mimir models pull` downloads the configured embedding model into `embeddingModelPath`. |
+| TTS model preload | Users had to infer how `--offline` relates to the Transformers.js TTS cache. | Fixed: `docs/offline-tts-preload.md` documents non-sensitive preload, offline verification, and air-gapped transfer. |
 
 ## DX Findings
 
@@ -44,8 +45,6 @@ developer and agent workflow around installation, indexing, querying, safety, au
 
 - `local-hash` is intentionally low-friction but not semantic. The docs must continue to say this
   clearly so users do not overtrust retrieval quality.
-- Transformers.js offline TTS still depends on preloaded model files. Embedding preload now has
-  `mimir models pull`, but fully air-gapped TTS still needs a dedicated preload workflow.
 - MCP access is read-focused but still exposes private retrieved passages to the connected agent.
   Team/RBAC support remains out of scope.
 - `audit --unsupported` intentionally lists relative paths only; users still need to avoid pasting
@@ -54,6 +53,5 @@ developer and agent workflow around installation, indexing, querying, safety, au
 
 ## Recommended Next Pass
 
-1. Add a model-preload guide for offline TTS.
-2. Add example-driven API guides once real external library usage appears.
-3. Add richer MCP client examples if users integrate non-Claude/Codex agents.
+1. Add example-driven API guides once real external library usage appears.
+2. Add richer MCP client examples if users integrate non-Claude/Codex agents.

@@ -367,7 +367,7 @@ when sending the narration text to that service is acceptable. MP3 output requir
 `--engine edge` for this reason.
 
 By default, `mimir audio` uses the Transformers.js WAV path. For confidential or air-gapped work,
-preload Transformers.js-compatible model files and render WAV offline:
+preload Transformers.js-compatible model files with non-sensitive text, then render WAV offline:
 
 ```bash
 pnpm exec mimir audio /tmp/MIMIR-SUMMARY-project.txt \
@@ -388,6 +388,9 @@ pnpm exec mimir-tts render /tmp/MIMIR-SUMMARY-project.txt \
 
 The default standalone engine is `transformers`. The default Transformers.js model is
 `Xenova/mms-tts-fra`. Override it with `--model` or `MIMIR_TTS_MODEL`.
+
+See [`docs/offline-tts-preload.md`](./docs/offline-tts-preload.md) for the exact preload and
+offline-check workflow.
 
 ## Data Boundary
 
@@ -701,6 +704,8 @@ pnpm --dir packages/mimir-core pack
   and MCP tool inputs.
 - [`docs/fr-eu-sovereign-positioning.md`](./docs/fr-eu-sovereign-positioning.md): bounded FR/EU
   sovereignty, GDPR, AI Act, and legal-vertical positioning.
+- [`docs/offline-tts-preload.md`](./docs/offline-tts-preload.md): preload and verify the offline
+  Transformers.js TTS cache before rendering confidential audio.
 - [`docs/ux-dx-audit.md`](./docs/ux-dx-audit.md): current UX/DX findings, fixes, and remaining
   product risks.
 

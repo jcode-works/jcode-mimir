@@ -161,14 +161,24 @@ Only use Edge TTS when sending narration text to the online service is acceptabl
 Offline rendering requires model files to already exist under `.mimir/models/tts` or the path passed
 with `--model-path`.
 
-For a first online setup on non-sensitive text:
+For a first online setup, use non-sensitive text:
 
 ```bash
-pnpm exec mimir-tts render /tmp/test.txt --out .mimir/audio/test.wav
+printf 'Mimir offline speech preload check.' > /tmp/mimir-tts-preload.txt
+pnpm exec mimir-tts render /tmp/mimir-tts-preload.txt \
+  --engine transformers \
+  --allow-remote-models \
+  --model-path .mimir/models/tts \
+  --out .mimir/audio/preload-check.wav
 ```
 
 Then reuse the cached files with:
 
 ```bash
-pnpm exec mimir-tts render /tmp/test.txt --offline --out .mimir/audio/test.wav
+pnpm exec mimir-tts render /tmp/mimir-tts-preload.txt \
+  --offline \
+  --model-path .mimir/models/tts \
+  --out .mimir/audio/offline-check.wav
 ```
+
+The full workflow is documented in [`offline-tts-preload.md`](./offline-tts-preload.md).
