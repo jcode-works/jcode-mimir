@@ -21,5 +21,6 @@ surface. In local native runs, set `MIMIR_CLI_BIN` when the `mimir` binary is no
 [`../../docs/app-sidecar-architecture.md`](../../docs/app-sidecar-architecture.md).
 
 The current shell consumes JSON from `mimir doctor`, `mimir status`, `mimir ingest`,
-`mimir ask`, `mimir security-audit`, and `mimir models pull` for project status, cited retrieval,
-privacy posture, and explicit model preloading.
+`mimir ask`, `mimir security-audit`, `mimir models pull`, and offline `mimir audio` for project
+status, cited retrieval, privacy posture, explicit model preloading, Markdown reports, and local
+audio report rendering.

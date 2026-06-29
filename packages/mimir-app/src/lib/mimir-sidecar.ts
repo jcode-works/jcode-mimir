@@ -10,11 +10,13 @@ export type MimirCommandKind =
   | "security-audit"
   | "audit-unsupported"
   | "models-pull"
+  | "audio-summary"
 
 export interface MimirCommandRequest {
   projectRoot: string
   command: MimirCommandKind
   query?: string
+  text?: string
   rebuild?: boolean
   topK?: number
 }
@@ -140,6 +142,19 @@ export interface ModelsPullResult {
   embeddingModelPath: string
 }
 
+export interface AudioRenderResult {
+  outputPath: string
+  engine: "edge" | "transformers"
+  outputFormat: "mp3" | "wav"
+  model: string
+  modelPath: string
+  allowRemoteModels: boolean
+  voice: string | null
+  rate: string | null
+  samplingRate: number | null
+  samples: number | null
+}
+
 interface SetupResult {
   doctor: DoctorReport
 }
@@ -186,6 +201,17 @@ export async function runModelsPull(projectRoot: string): Promise<ModelsPullResu
     { projectRoot, command: "models-pull" },
     isModelsPullResult,
     "models pull result",
+  )
+}
+
+export async function runAudioSummary(
+  projectRoot: string,
+  text: string,
+): Promise<AudioRenderResult> {
+  return runJsonCommand(
+    { projectRoot, command: "audio-summary", text },
+    isAudioRenderResult,
+    "audio render result",
   )
 }
 
@@ -328,6 +354,22 @@ function isModelsPullResult(value: unknown): value is ModelsPullResult {
     isRecord(value) &&
     typeof value.embeddingModel === "string" &&
     typeof value.embeddingModelPath === "string"
+  )
+}
+
+function isAudioRenderResult(value: unknown): value is AudioRenderResult {
+  return (
+    isRecord(value) &&
+    typeof value.outputPath === "string" &&
+    (value.engine === "edge" || value.engine === "transformers") &&
+    (value.outputFormat === "mp3" || value.outputFormat === "wav") &&
+    typeof value.model === "string" &&
+    typeof value.modelPath === "string" &&
+    typeof value.allowRemoteModels === "boolean" &&
+    (typeof value.voice === "string" || value.voice === null) &&
+    (typeof value.rate === "string" || value.rate === null) &&
+    (typeof value.samplingRate === "number" || value.samplingRate === null) &&
+    (typeof value.samples === "number" || value.samples === null)
   )
 }
 

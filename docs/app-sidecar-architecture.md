@@ -52,10 +52,14 @@ The app should start with a small allowlist:
 | Privacy audit | `mimir security-audit --json` |
 | Unsupported files | `mimir audit --unsupported --json` |
 | Model preload | `mimir models pull --json` |
+| Audio report | `mimir audio "<generated-text-file>" --offline --json` |
 
 The UI must pass an explicit project root for each selected knowledge base with
 `mimir --project-root "<path>" ...` and keep generated state inside that project (`.kb/`, `.mimir/`)
 unless the user intentionally chooses another local folder.
+
+For audio reports, `run_mimir_command` writes the current retrieval report text under ignored
+`.mimir/audio/` first, then passes that generated text file to `mimir audio --offline --json`.
 
 ## Deferred Work
 

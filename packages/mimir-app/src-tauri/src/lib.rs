@@ -1,5 +1,10 @@
 use serde::{Deserialize, Serialize};
-use std::process::Command;
+use std::{
+    fs,
+    path::PathBuf,
+    process::Command,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -7,6 +12,7 @@ struct MimirCommandRequest {
     project_root: String,
     command: MimirCommandKind,
     query: Option<String>,
+    text: Option<String>,
     rebuild: Option<bool>,
     top_k: Option<u16>,
 }
@@ -23,6 +29,7 @@ enum MimirCommandKind {
     SecurityAudit,
     AuditUnsupported,
     ModelsPull,
+    AudioSummary,
 }
 
 #[derive(Debug, Serialize)]
@@ -88,6 +95,10 @@ fn mimir_args(request: &MimirCommandRequest, project_root: &str) -> Result<Vec<S
         MimirCommandKind::ModelsPull => {
             args.extend(["models".into(), "pull".into(), "--json".into()]);
         }
+        MimirCommandKind::AudioSummary => {
+            let text_file = write_audio_summary_text(request, project_root)?;
+            args.extend(["audio".into(), text_file, "--offline".into(), "--json".into()]);
+        }
     }
 
     Ok(args)
@@ -99,6 +110,32 @@ fn required_query(request: &MimirCommandRequest) -> Result<String, String> {
         return Err("Query is required.".into());
     }
     Ok(query.into())
+}
+
+fn required_text(request: &MimirCommandRequest) -> Result<String, String> {
+    let text = request.text.as_deref().unwrap_or("").trim();
+    if text.is_empty() {
+        return Err("Audio text is required.".into());
+    }
+    Ok(text.into())
+}
+
+fn write_audio_summary_text(
+    request: &MimirCommandRequest,
+    project_root: &str,
+) -> Result<String, String> {
+    let text = required_text(request)?;
+    let audio_dir = PathBuf::from(project_root).join(".mimir").join("audio");
+    fs::create_dir_all(&audio_dir)
+        .map_err(|error| format!("Unable to prepare audio dir: {error}"))?;
+
+    let timestamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_err(|error| format!("Unable to create audio timestamp: {error}"))?
+        .as_secs();
+    let text_file = audio_dir.join(format!("retrieval-report-{timestamp}.txt"));
+    fs::write(&text_file, text).map_err(|error| format!("Unable to write audio text: {error}"))?;
+    Ok(text_file.to_string_lossy().into_owned())
 }
 
 fn push_top_k(args: &mut Vec<String>, top_k: Option<u16>) {

@@ -28,12 +28,14 @@ import {
   ShieldCheck,
   Trash2,
   TriangleAlert,
+  Volume2,
 } from "lucide-react"
 import { type DragEvent, type FormEvent, useEffect, useState } from "react"
 import {
   type AskResult,
   type DoctorReport,
   runAsk,
+  runAudioSummary,
   runDoctor,
   runIngest,
   runModelsPull,
@@ -222,6 +224,21 @@ export function App(): React.JSX.Element {
     setRuntimeMessage("Markdown report exported from the current retrieval.")
   }
 
+  async function handleRenderAudio(): Promise<void> {
+    if (!activeProject || !askResult) {
+      setRuntimeMessage("Run retrieval before rendering an audio report.")
+      return
+    }
+
+    await runProjectCommand("Rendering offline audio report", activeProject, async () => {
+      const result = await runAudioSummary(
+        activeProject.projectRoot,
+        retrievalReportMarkdown(activeProject, askResult),
+      )
+      setRuntimeMessage(`Audio report written to ${result.outputPath}.`)
+    })
+  }
+
   async function handlePullModels(): Promise<void> {
     if (!activeProject) {
       setRuntimeMessage("Select a project before preloading the embedding model.")
@@ -398,6 +415,7 @@ export function App(): React.JSX.Element {
               askResult={askResult}
               isRunning={isRunning}
               onExportMarkdown={handleExportMarkdown}
+              onRenderAudio={handleRenderAudio}
               onAskSubmit={handleAskSubmit}
               onQuestionChange={setQuestion}
               question={question}
@@ -627,6 +645,7 @@ interface RetrievalViewProps extends ProjectPanelProps {
   askResult: AskResult | null
   isRunning: boolean
   onExportMarkdown: () => void
+  onRenderAudio: () => Promise<void>
   onAskSubmit: (event: FormEvent<HTMLFormElement>) => Promise<void>
   onQuestionChange: (question: string) => void
   question: string
@@ -637,6 +656,7 @@ function RetrievalView({
   askResult,
   isRunning,
   onExportMarkdown,
+  onRenderAudio,
   onAskSubmit,
   onQuestionChange,
   question,
@@ -656,16 +676,28 @@ function RetrievalView({
               <CardTitle>Ask</CardTitle>
               <CardDescription>Retrieval context with source citations.</CardDescription>
             </div>
-            <Button
-              disabled={!activeProject || !askResult || isRunning}
-              size="sm"
-              type="button"
-              variant="outline"
-              onClick={onExportMarkdown}
-            >
-              <Download aria-hidden="true" />
-              Export .md
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                disabled={!activeProject || !askResult || isRunning}
+                size="sm"
+                type="button"
+                variant="outline"
+                onClick={onExportMarkdown}
+              >
+                <Download aria-hidden="true" />
+                Export .md
+              </Button>
+              <Button
+                disabled={!activeProject || !askResult || isRunning}
+                size="sm"
+                type="button"
+                variant="outline"
+                onClick={onRenderAudio}
+              >
+                <Volume2 aria-hidden="true" />
+                Audio
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
