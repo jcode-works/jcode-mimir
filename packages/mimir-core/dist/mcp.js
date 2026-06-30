@@ -1,7 +1,10 @@
+import path from "node:path";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { accessLogUsageReport } from "./access-log.js";
 import { loadConfig } from "./config.js";
+import { evaluateGoldenQueries } from "./evaluate.js";
 import { audit } from "./ingest.js";
 import { ask, search } from "./query.js";
 import { securityAudit } from "./security.js";
@@ -10,6 +13,14 @@ import { VERSION } from "./version.js";
 const queryToolInputSchema = z.object({
     query: z.string().min(1),
     topK: z.number().int().positive().optional(),
+});
+const evaluateToolInputSchema = z.object({
+    goldenPath: z.string().min(1),
+    topK: z.number().int().positive().optional(),
+    failUnder: z.number().min(0).max(1).optional(),
+});
+const usageReportInputSchema = z.object({
+    days: z.number().int().positive().optional(),
 });
 export async function serveMcp(cwd = resolveMcpProjectRoot()) {
     const server = new McpServer({
@@ -60,11 +71,38 @@ export async function serveMcp(cwd = resolveMcpProjectRoot()) {
         description: "Compare supported source files on disk with the current vector index.",
         inputSchema: z.object({}),
     }, async () => textResult(await audit(cwd)));
+    server.registerTool("mimir_evaluate", {
+        title: "Mimir Evaluate",
+        description: "Measure retrieval recall against a local golden query file.",
+        inputSchema: evaluateToolInputSchema,
+    }, async ({ goldenPath, topK, failUnder }) => {
+        const result = await evaluateGoldenQueries(await evaluationOptions(cwd, goldenPath, topK));
+        if (failUnder === undefined) {
+            return textResult(result);
+        }
+        const minimumRecall = failUnder;
+        return textResult({
+            ...result,
+            minimumRecall,
+            passed: result.recall >= minimumRecall,
+        });
+    });
     server.registerTool("mimir_security_audit", {
         title: "Mimir Security Audit",
         description: "Show local privacy, provider, redaction, MCP, and gitignore posture.",
         inputSchema: z.object({}),
     }, async () => textResult(await securityAudit(cwd)));
+    server.registerTool("mimir_usage_report", {
+        title: "Mimir Usage Report",
+        description: "Summarize the metadata-only local access log.",
+        inputSchema: usageReportInputSchema,
+    }, async ({ days }) => {
+        const options = { cwd };
+        if (days !== undefined) {
+            options.days = days;
+        }
+        return textResult(await accessLogUsageReport(options));
+    });
     await server.connect(new StdioServerTransport());
 }
 export function resolveMcpProjectRoot(env = process.env, fallback = process.cwd()) {
@@ -84,5 +122,26 @@ async function searchOptions(cwd, topK) {
     const config = await loadConfig(cwd);
     const boundedTopK = Math.min(topK ?? config.topK, config.mcpMaxTopK);
     return { cwd, topK: boundedTopK };
+}
+async function evaluationOptions(cwd, goldenPath, topK) {
+    const config = await loadConfig(cwd);
+    const result = {
+        cwd,
+        goldenPath: projectRelativeGoldenPath(cwd, goldenPath),
+        maxTopK: config.mcpMaxTopK,
+    };
+    if (topK === undefined) {
+        return result;
+    }
+    return { ...result, topK: Math.min(topK, config.mcpMaxTopK) };
+}
+function projectRelativeGoldenPath(cwd, goldenPath) {
+    const root = path.resolve(cwd);
+    const absolutePath = path.resolve(root, goldenPath);
+    const relativePath = path.relative(root, absolutePath);
+    if (relativePath.length === 0 || relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
+        throw new Error("mimir_evaluate goldenPath must stay inside the MCP project root.");
+    }
+    return relativePath;
 }
 //# sourceMappingURL=mcp.js.map

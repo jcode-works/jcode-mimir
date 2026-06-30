@@ -106,6 +106,9 @@ function nextActions(input: NextActionInput): string[] {
   if (input.chunksIndexed === 0 || input.missingFromIndex > 0 || input.staleInIndex > 0) {
     steps.push(`Run \`${input.run(["doctor", "--fix"])}\` to rebuild stale or missing index data.`)
     steps.push(`Run \`${input.run(["audit"])}\` to verify missingFromIndex=0 and staleInIndex=0.`)
+    steps.push(
+      "If files remain missing because they are scanned or image-only PDFs, configure `pdfOcrCommand` or convert scans/images to OCR text before ingesting.",
+    )
   }
 
   if (input.warnings > 0) {

@@ -2,6 +2,7 @@
 import path from "node:path"
 import { Command } from "commander"
 import pc from "picocolors"
+import { accessLogUsageReport } from "./access-log.js"
 import { loadConfig } from "./config.js"
 import { destroyIndex } from "./destroy.js"
 import { doctor } from "./doctor.js"
@@ -174,10 +175,11 @@ program
 
     console.log(
       pc.green(
-        `Done. discoveredFiles=${result.discoveredFiles} supportedFiles=${result.supportedFiles} indexedFiles=${result.indexedFiles} rebuiltFiles=${result.rebuiltFiles} reusedFiles=${result.reusedFiles} chunks=${result.chunks} skippedFiles=${result.skippedFiles} unsupportedFiles=${result.unsupportedFiles} oversizedFiles=${result.oversizedFiles} sensitiveFiles=${result.sensitiveFiles} redactions=${result.redactions} errors=${result.errors.length}`,
+        `Done. discoveredFiles=${result.discoveredFiles} supportedFiles=${result.supportedFiles} indexedFiles=${result.indexedFiles} rebuiltFiles=${result.rebuiltFiles} reusedFiles=${result.reusedFiles} chunks=${result.chunks} skippedFiles=${result.skippedFiles} unsupportedFiles=${result.unsupportedFiles} oversizedFiles=${result.oversizedFiles} sensitiveFiles=${result.sensitiveFiles} emptyTextFiles=${result.emptyTextFiles.length} redactions=${result.redactions} errors=${result.errors.length}`,
       ),
     )
     printUnsupportedSummary(result.unsupportedExtensions)
+    printEmptyTextFiles(result.emptyTextFiles)
     if (result.unsupportedFiles > 0 || result.oversizedFiles > 0 || result.sensitiveFiles > 0) {
       const auditCommand = await mimirCommand(cwd, ["audit", "--unsupported"])
       console.log(
@@ -344,7 +346,11 @@ program
     }
     if (options.unsupported) {
       for (const file of report.skippedFiles) {
-        console.log(pc.yellow(`skipped: ${file.relativePath} reason=${file.reason}`))
+        console.log(
+          pc.yellow(
+            `skipped: ${file.relativePath} reason=${file.reason} recommendation=${file.recommendation}`,
+          ),
+        )
       }
     } else if (report.skippedFiles.length > 0) {
       console.log(pc.yellow("Run `mimir audit --unsupported` to list skipped file paths."))
@@ -352,6 +358,32 @@ program
 
     if (report.missingFromIndex.length > 0 || report.staleInIndex.length > 0) {
       process.exitCode = 1
+    }
+  })
+
+program
+  .command("usage-report")
+  .description("Summarize the metadata-only local access log.")
+  .option("--days <number>", "Number of recent days to include.", parsePositiveInt, 7)
+  .option("--json", "Print machine-readable JSON.")
+  .action(async (options: { days: number; json?: boolean }, command: Command) => {
+    const cwd = projectRoot(command)
+    const report = await accessLogUsageReport({ cwd, days: options.days })
+    if (options.json) {
+      console.log(JSON.stringify(report, null, 2))
+      return
+    }
+
+    console.log(`accessLogEnabled=${report.accessLogEnabled}`)
+    console.log(`since=${report.since}`)
+    console.log(`until=${report.until}`)
+    console.log(`totalEvents=${report.totalEvents}`)
+    console.log(`invalidLines=${report.invalidLines}`)
+    console.log(`uniqueQueryHashes=${report.uniqueQueryHashes}`)
+    console.log(`averageResultCount=${report.averageResultCount ?? "n/a"}`)
+    console.log(`lastEventAt=${report.lastEventAt ?? "n/a"}`)
+    for (const [action, count] of Object.entries(report.eventsByAction)) {
+      console.log(`events.${action}=${count}`)
     }
   })
 
@@ -822,9 +854,10 @@ function printSetup(result: Awaited<ReturnType<typeof setupProject>>, title: str
   console.log(pc.cyan("Index:"))
   if (result.ingested) {
     console.log(
-      `  - ingested indexedFiles=${result.ingested.indexedFiles} rebuiltFiles=${result.ingested.rebuiltFiles} reusedFiles=${result.ingested.reusedFiles} chunks=${result.ingested.chunks} skippedFiles=${result.ingested.skippedFiles} errors=${result.ingested.errors.length}`,
+      `  - ingested indexedFiles=${result.ingested.indexedFiles} rebuiltFiles=${result.ingested.rebuiltFiles} reusedFiles=${result.ingested.reusedFiles} chunks=${result.ingested.chunks} skippedFiles=${result.ingested.skippedFiles} emptyTextFiles=${result.ingested.emptyTextFiles.length} errors=${result.ingested.errors.length}`,
     )
     printUnsupportedSummary(result.ingested.unsupportedExtensions)
+    printEmptyTextFiles(result.ingested.emptyTextFiles)
   } else if (result.doctor.ready) {
     console.log(`  - already ready chunks=${result.doctor.chunksIndexed}`)
   } else {
@@ -843,6 +876,21 @@ function printUnsupportedSummary(extensions: Array<{ extension: string; count: n
       `unsupportedExtensions=${extensions
         .map((entry) => `${entry.extension}:${entry.count}`)
         .join(",")}`,
+    ),
+  )
+}
+
+function printEmptyTextFiles(files: string[]): void {
+  if (files.length === 0) {
+    return
+  }
+  console.log(pc.yellow(`emptyTextFiles=${files.length}`))
+  for (const file of files) {
+    console.log(pc.yellow(`empty-text: ${file}`))
+  }
+  console.log(
+    pc.yellow(
+      "These supported files produced no indexable text. For scanned/image-only PDFs, configure pdfOcrCommand or store local OCR text beside the source file.",
     ),
   )
 }

@@ -26,6 +26,25 @@ export interface Config {
   pdfOcrTimeoutMs: number
 }
 
+export type AccessLogAction = "ingest" | "search" | "ask" | "evaluate" | "destroy-index"
+
+export interface AccessLogUsageOptions {
+  cwd?: PathLike
+  days?: number
+}
+
+export interface AccessLogUsageReport {
+  accessLogEnabled: boolean
+  since: string
+  until: string
+  totalEvents: number
+  invalidLines: number
+  eventsByAction: Record<AccessLogAction, number>
+  uniqueQueryHashes: number
+  averageResultCount: number | null
+  lastEventAt: string | null
+}
+
 export type EmbeddingProvider = "local-hash" | "transformers"
 
 export interface RedactionConfig {
@@ -64,6 +83,7 @@ export interface SkippedSourceFile {
   extension: string
   bytes: number
   reason: SkippedSourceReason
+  recommendation: string
 }
 
 export interface SourceInventory {
@@ -110,6 +130,7 @@ export interface IngestResult {
   unsupportedFiles: number
   oversizedFiles: number
   sensitiveFiles: number
+  emptyTextFiles: string[]
   unsupportedExtensions: Array<{ extension: string; count: number }>
   redactions: number
   errors: Array<{ path: string; message: string }>
@@ -139,6 +160,7 @@ export interface EvaluationOptions {
   cwd?: PathLike
   goldenPath: PathLike
   topK?: number
+  maxTopK?: number
 }
 
 export interface EvaluationCaseResult {

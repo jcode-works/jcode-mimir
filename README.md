@@ -250,6 +250,12 @@ List skipped paths explicitly:
 pnpm exec mimir audit --unsupported
 ```
 
+Summarize recent metadata-only usage without exposing raw queries or local paths:
+
+```bash
+pnpm exec mimir usage-report --days 7
+```
+
 Retrieve exact passages:
 
 ```bash
@@ -364,9 +370,10 @@ Start the MCP server from the repository root when a compatible agent needs tool
 pnpm exec mimir serve-mcp
 ```
 
-The MCP server exposes `mimir_status`, `mimir_search`, `mimir_ask`, `mimir_audit`, and
-`mimir_security_audit`. The LLM does not need to know about LanceDB or the raw file layout; it asks
-Mimir for ranked passages or cited context and uses the returned citations.
+The MCP server exposes `mimir_status`, `mimir_search`, `mimir_ask`, `mimir_audit`,
+`mimir_evaluate`, `mimir_usage_report`, and `mimir_security_audit`. The LLM does not need to know
+about LanceDB or the raw file layout; it asks Mimir for ranked passages, cited context, local recall
+gates, or metadata-only usage summaries and uses the returned citations.
 
 Per-agent setup details live in [`docs/agent-integration.md`](./docs/agent-integration.md).
 
@@ -443,6 +450,8 @@ Mimir is designed for private repositories and sensitive local evidence.
 - Redaction before indexing: common secrets and identifiers are redacted before chunks are embedded
   and stored.
 - Metadata-only access logs: query hashes and action metadata are logged, not raw queries.
+- Metadata-only usage reports: `mimir usage-report --days 7` summarizes recent local activity
+  without exposing query text or local paths.
 - MCP is read-focused and bounded by `mcpMaxTopK`.
 - Generated local state is ignored by Git.
 
@@ -504,9 +513,12 @@ KB_INCLUDE_EXTENSIONS=".transcript,.evidence" pnpm exec mimir ingest
 ```
 
 Images, audio/video files, old proprietary Office binaries such as `.doc`, and other formats that are
-not listed should be transcribed, converted, or exported to text/PDF/HTML first. Scanned PDFs can use
-an explicit `pdfOcrCommand` wrapper when you accept running local OCR tooling. Mimir intentionally
-avoids pretending that every binary format can be indexed safely without extraction logic.
+not listed are not useful to Mimir as-is. They can still be valuable source evidence, but they should
+be OCRed, transcribed, converted, or exported to text/PDF/HTML first. `mimir audit --unsupported`
+prints per-file recommendations for these skipped formats. Scanned PDFs can use an explicit
+`pdfOcrCommand` wrapper when you accept running local OCR tooling. If a supported file parses to no
+text, `mimir ingest --json` reports it under `emptyTextFiles`. Mimir intentionally avoids pretending
+that every binary format can be indexed safely without extraction logic.
 
 Secret-like files such as `.env`, `.npmrc`, private keys, and certificates are skipped by default.
 Convert safe examples to a normal text format before ingestion.
@@ -575,7 +587,8 @@ Environment overrides:
 
 `pdfOcrCommand` is opt-in and only runs when normal PDF text extraction returns no text. The command
 is executed without a shell, receives `MIMIR_PDF_PATH`, replaces `{input}` placeholders with the PDF
-path, and must print UTF-8 text to stdout.
+path, and must print UTF-8 text to stdout. Standalone image files are not OCRed directly by Mimir
+Core; OCR them to a supported text file or convert them to an OCRed PDF before ingestion.
 
 ## CLI Reference
 

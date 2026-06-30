@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises"
 import path from "node:path"
 import { z } from "zod"
+import { recordAccess } from "./access-log.js"
 import { loadConfig } from "./config.js"
 import { search } from "./query.js"
 import type {
@@ -34,11 +35,11 @@ export async function evaluateGoldenQueries(options: EvaluationOptions): Promise
   const config = await loadConfig(cwd)
   const goldenPath = path.resolve(cwd, String(options.goldenPath))
   const goldenFile = await readGoldenFile(goldenPath)
-  const defaultTopK = options.topK ?? goldenFile.topK ?? 3
+  const defaultTopK = boundedTopK(options.topK ?? goldenFile.topK ?? 3, options.maxTopK)
   const cases: EvaluationCaseResult[] = []
 
   for (const goldenQuery of goldenFile.queries) {
-    const topK = goldenQuery.topK ?? defaultTopK
+    const topK = boundedTopK(goldenQuery.topK ?? defaultTopK, options.maxTopK)
     const results = await search(goldenQuery.query, { cwd, topK })
     const returnedPaths = results.map((result) => result.relativePath)
     const matchedPaths = returnedPaths.filter((resultPath) =>
@@ -63,6 +64,11 @@ export async function evaluateGoldenQueries(options: EvaluationOptions): Promise
   }
 
   const hits = cases.filter((result) => result.hit).length
+  await recordAccess(config, {
+    action: "evaluate",
+    topK: defaultTopK,
+    resultCount: cases.length,
+  })
   return {
     goldenPath,
     embeddingProvider: config.embeddingProvider,
@@ -105,4 +111,8 @@ function normalizeGoldenQuery(value: z.infer<typeof goldenQuerySchema>): GoldenQ
     result.topK = value.topK
   }
   return result
+}
+
+function boundedTopK(topK: number, maxTopK: number | undefined): number {
+  return maxTopK === undefined ? topK : Math.min(topK, maxTopK)
 }

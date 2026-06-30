@@ -1,4 +1,4 @@
-import { cp, mkdtemp, rm } from "node:fs/promises"
+import { cp, mkdtemp, rm, writeFile } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
@@ -35,5 +35,43 @@ describe("evaluateGoldenQueries", () => {
     expect(report.misses).toBe(0)
     expect(report.recall).toBe(1)
     expect(report.cases.every((result) => result.hit)).toBe(true)
+  })
+
+  it("caps query topK when a caller provides a maximum", async () => {
+    const parent = await mkdtemp(path.join(os.tmpdir(), "mimir-evaluate-cap-"))
+    tempDirs.push(parent)
+    const root = path.join(parent, "example")
+    await cp(path.join(packageRoot, "examples", "sovereign-rag-demo"), root, {
+      recursive: true,
+    })
+    await writeFile(
+      path.join(root, "large-top-k-golden.json"),
+      `${JSON.stringify(
+        {
+          topK: 50,
+          queries: [
+            {
+              id: "large-top-k",
+              query: "Which dataset was rejected for confidential tests?",
+              expectedPaths: ["raw/dataset-inventory.csv"],
+              topK: 50,
+            },
+          ],
+        },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    )
+
+    await ingest({ cwd: root })
+    const report = await evaluateGoldenQueries({
+      cwd: root,
+      goldenPath: "large-top-k-golden.json",
+      maxTopK: 3,
+    })
+
+    expect(report.topK).toBe(3)
+    expect(report.cases[0]?.topK).toBe(3)
   })
 })

@@ -86,6 +86,13 @@ try {
   if (!Array.isArray(ingestJson.errors) || ingestJson.errors.length !== 0) {
     throw new Error(`ingest --json should expose an empty errors array, got ${ingestJson.errors}`)
   }
+  if (!Array.isArray(ingestJson.emptyTextFiles) || ingestJson.emptyTextFiles.length !== 0) {
+    throw new Error(
+      `ingest --json should expose emptyTextFiles for supported files with no text, got ${JSON.stringify(
+        ingestJson.emptyTextFiles,
+      )}`,
+    )
+  }
 
   const searchJson = parseJson(
     (await runKb(["search", "French tax residency", "--top-k", "1", "--json"], tempRoot)).stdout,
@@ -124,9 +131,38 @@ try {
     "ask should return retrieval context without calling an LLM",
   )
 
+  const usageJson = parseJson(
+    (await runKb(["usage-report", "--days", "7", "--json"], tempRoot)).stdout,
+    "usage report JSON",
+  )
+  if (usageJson.totalEvents < 1 || usageJson.uniqueQueryHashes < 1) {
+    throw new Error(`usage-report should summarize local usage, got ${JSON.stringify(usageJson)}`)
+  }
+  assertNotIncludes(
+    JSON.stringify(usageJson),
+    "French tax residency",
+    "usage-report should not expose raw query text",
+  )
+  assertNotIncludes(
+    JSON.stringify(usageJson),
+    tempRoot,
+    "usage-report should not expose local project paths",
+  )
+
   const audit = await runKb(["audit"], tempRoot)
   assertIncludes(audit.stdout, "missingFromIndex=0", "audit should find no missing files")
   assertIncludes(audit.stdout, "staleInIndex=0", "audit should find no stale files")
+  const unsupportedAudit = await runKb(["audit", "--unsupported"], tempRoot)
+  assertIncludes(
+    unsupportedAudit.stdout,
+    "skipped: private/scan.png reason=unsupported-extension",
+    "audit --unsupported should list unsupported image files",
+  )
+  assertIncludes(
+    unsupportedAudit.stdout,
+    "Run local OCR and save the text as a supported text file",
+    "audit --unsupported should recommend OCR for image files",
+  )
 
   const doctor = await runKb(["doctor", "--json"], tempRoot)
   assertIncludes(doctor.stdout, '"ready": true', "doctor should report a ready knowledge base")
@@ -255,6 +291,17 @@ async function smokeExampleWorkspace() {
     const audit = await runKb(["audit"], exampleTemp)
     assertIncludes(audit.stdout, "missingFromIndex=0", "example audit should find no missing files")
     assertIncludes(audit.stdout, "staleInIndex=0", "example audit should find no stale files")
+    const unsupportedAudit = await runKb(["audit", "--unsupported"], exampleTemp)
+    assertIncludes(
+      unsupportedAudit.stdout,
+      "facility-scan.heic reason=unsupported-extension",
+      "example audit should list unsupported scanned document placeholders",
+    )
+    assertIncludes(
+      unsupportedAudit.stdout,
+      "Run local OCR and save the text as a supported text file",
+      "example audit should recommend OCR for image-only source evidence",
+    )
 
     const evaluation = parseJson(
       (await runKb(["evaluate", "--golden", "golden-queries.json", "--json"], exampleTemp)).stdout,
@@ -407,6 +454,7 @@ async function writeFixtureDocuments(cwd) {
     ].join("\n"),
     "utf8",
   )
+  await writeFile(path.join(cwd, "private", "scan.png"), "synthetic image placeholder\n", "utf8")
 }
 
 async function runKb(args, cwd) {
@@ -475,6 +523,12 @@ async function smokeMcp(cwd) {
 
     const tools = await client.request("tools/list", {})
     assertIncludes(JSON.stringify(tools), "mimir_search", "MCP should expose mimir_search")
+    assertIncludes(JSON.stringify(tools), "mimir_evaluate", "MCP should expose mimir_evaluate")
+    assertIncludes(
+      JSON.stringify(tools),
+      "mimir_usage_report",
+      "MCP should expose mimir_usage_report",
+    )
 
     const status = await client.request("tools/call", {
       name: "mimir_status",
@@ -487,6 +541,40 @@ async function smokeMcp(cwd) {
       arguments: { query: "French tax residency", topK: 1 },
     })
     assertIncludes(mcpText(search), "tax.md", "MCP search should retrieve indexed content")
+
+    await writeFile(
+      path.join(cwd, "mcp-golden-queries.json"),
+      `${JSON.stringify(
+        {
+          queries: [
+            {
+              query: "What proves the French tax residency risk?",
+              expectedPaths: ["private/tax.md"],
+            },
+          ],
+        },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    )
+    const evaluation = await client.request("tools/call", {
+      name: "mimir_evaluate",
+      arguments: { goldenPath: "mcp-golden-queries.json", failUnder: 1 },
+    })
+    const evaluationJson = parseJson(mcpText(evaluation), "MCP evaluation JSON")
+    if (evaluationJson.recall !== 1 || evaluationJson.passed !== true) {
+      throw new Error(`MCP evaluate should pass the temporary golden set: ${mcpText(evaluation)}`)
+    }
+
+    const usage = await client.request("tools/call", {
+      name: "mimir_usage_report",
+      arguments: { days: 7 },
+    })
+    const usageJson = parseJson(mcpText(usage), "MCP usage report JSON")
+    if (usageJson.totalEvents < 1) {
+      throw new Error(`MCP usage report should summarize local usage: ${mcpText(usage)}`)
+    }
   } finally {
     await client.close()
   }

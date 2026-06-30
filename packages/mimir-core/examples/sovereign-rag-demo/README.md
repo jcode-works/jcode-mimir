@@ -13,7 +13,7 @@ This folder must never contain real-world sensitive, regulated, or production do
 - JSONL incident timelines.
 - YAML policy metadata.
 - A custom `.evidence` text extension enabled through `.kb/config.json`.
-- Unsupported/skipped-file reporting through `audit --unsupported`.
+- Unsupported/skipped-file reporting with recommendations through `audit --unsupported`.
 
 ## Run From This Repository Checkout
 

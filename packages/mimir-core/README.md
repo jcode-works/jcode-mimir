@@ -46,7 +46,8 @@ pnpm exec mimir ask "your question"
 ```
 
 By default, Mimir indexes documents from `private/`, reports unsupported/skipped files during
-ingestion, stores generated state under `.kb/`, and keeps agent integration files under `.mimir/`.
+ingestion, reports supported files that produced no extractable text, stores generated state under
+`.kb/`, and keeps agent integration files under `.mimir/`.
 `mimir setup` adds the matching Git ignore entries for local generated and private data.
 
 Run `pnpm exec mimir doctor --fix` later to repair missing setup or rebuild stale indexes.

@@ -96,7 +96,8 @@ await ingest({ cwd: "/path/to/workspace", rebuild: true })
 ```
 
 `IngestResult` includes discovered/supported/skipped file counts, rebuilt/reused file counts,
-unsupported-extension summaries, redaction counts, chunk count, and per-file parsing errors.
+unsupported-extension summaries, redaction counts, chunk count, `emptyTextFiles` for supported files
+that produced no indexable text, and per-file parsing errors.
 
 ### `audit(cwd?)`
 
@@ -214,6 +215,18 @@ const report = await securityAudit("/path/to/workspace")
 `accessLog.storesRawQueries` is always `false`. Mimir's access log stores query hashes and metadata,
 not raw query strings.
 
+### `accessLogUsageReport(options?)`
+
+Summarizes recent metadata-only access-log activity. It returns counts by action, unique query-hash
+count, average result count, invalid-line count, and the latest event timestamp without exposing raw
+queries or local paths.
+
+```ts
+import { accessLogUsageReport } from "@jcode.labs/mimir"
+
+const report = await accessLogUsageReport({ cwd: "/path/to/workspace", days: 7 })
+```
+
 ### `redactText(input, config)`
 
 Applies built-in and custom redaction patterns to text before indexing.
@@ -306,9 +319,12 @@ MCP tools exposed by the server:
 | `mimir_search` | `{ query: string, topK?: number }` |
 | `mimir_ask` | `{ query: string, topK?: number }` |
 | `mimir_audit` | `{}` |
+| `mimir_evaluate` | `{ goldenPath: string, topK?: number, failUnder?: number }` |
+| `mimir_usage_report` | `{ days?: number }` |
 | `mimir_security_audit` | `{}` |
 
-`topK` is bounded by `mcpMaxTopK` from config.
+`topK` is bounded by `mcpMaxTopK` from config. `mimir_evaluate` also requires `goldenPath` to stay
+inside the MCP project root.
 
 ## Package Manager Helpers
 

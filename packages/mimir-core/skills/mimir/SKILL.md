@@ -113,9 +113,10 @@ pnpm exec mimir status
 
 `mimir doctor --fix` updates the index only when supported files are present and the privacy posture
 has no warnings. Normal `mimir ingest` reuses unchanged rows; use `mimir ingest --rebuild` after changing
-embedding provider/model or chunking settings. `mimir doctor` should show `ready=true` before relying on
-the index. The audit must show no missing or stale supported files, and the security audit should not
-show warnings before relying on Mimir for sensitive work.
+embedding provider/model or chunking settings. `mimir ingest --json` reports `emptyTextFiles` when
+supported files, typically scanned PDFs, produce no indexable text. `mimir doctor` should show
+`ready=true` before relying on the index. The audit must show no missing or stale supported files, and
+the security audit should not show warnings before relying on Mimir for sensitive work.
 
 Default retrieval is tuned for broader recall (`topK: 8`, `chunkOverlap: 200`). Keep MCP retrieval
 bounded by `mcpMaxTopK`, and raise `--top-k` only when the first results are too narrow.
@@ -199,6 +200,8 @@ Available MCP tools:
 - `mimir_search`: retrieve source passages.
 - `mimir_ask`: return cited retrieval context.
 - `mimir_audit`: compare source files with the current index.
+- `mimir_evaluate`: measure retrieval recall against a local golden query file.
+- `mimir_usage_report`: summarize metadata-only local access-log activity without query text or local paths.
 - `mimir_security_audit`: inspect local privacy, provider, redaction, MCP, and gitignore posture.
 
 Prefer MCP tools over shell commands when the agent runtime provides them. Use shell commands when MCP is unavailable.

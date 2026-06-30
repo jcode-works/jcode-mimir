@@ -1,3 +1,4 @@
+export { accessLogUsageReport } from "./access-log.js"
 export { loadConfig } from "./config.js"
 export { destroyIndex } from "./destroy.js"
 export { doctor } from "./doctor.js"
@@ -28,6 +29,9 @@ export {
   SUPPORTED_AGENT_TARGETS,
 } from "./skill.js"
 export type {
+  AccessLogAction,
+  AccessLogUsageOptions,
+  AccessLogUsageReport,
   AskResult,
   AuditReport,
   Config,

@@ -70,11 +70,14 @@ MCP tools exposed:
 - `mimir_search`
 - `mimir_ask`
 - `mimir_audit`
+- `mimir_evaluate`
+- `mimir_usage_report`
 - `mimir_security_audit`
 
 This MCP layer is the recommended way to let any compatible LLM or agent query the same local
 knowledge base. The LLM does not need to know about LanceDB or the raw file layout; it asks Mimir for
-ranked passages or cited context and uses the returned citations.
+ranked passages, cited context, local recall gates, or metadata-only usage summaries and uses the
+returned citations.
 
 ## Claude Code
 

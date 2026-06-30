@@ -43,8 +43,9 @@ If files exist but are not supported yet, inspect the skipped inventory:
 pnpm exec mimir audit --unsupported
 ```
 
-Then either convert them to a supported format, OCR/transcribe them, or add a safe custom UTF-8 text
-extension with `includeExtensions` / `KB_INCLUDE_EXTENSIONS`.
+Then follow the per-file recommendation: convert unsupported binaries to a supported format,
+OCR/transcribe them, or add a safe custom UTF-8 text extension with `includeExtensions` /
+`KB_INCLUDE_EXTENSIONS`.
 
 ## Scanned PDFs Produce No Text
 
@@ -61,6 +62,10 @@ OCR wrapper that prints UTF-8 text to stdout:
 The command runs only when normal PDF extraction returns no text. It is executed without a shell,
 receives `MIMIR_PDF_PATH`, and may use `{input}` in its arguments for the PDF path. Keep OCR tooling
 local for confidential documents.
+
+If ingestion finishes but a scanned PDF still has no text, `mimir ingest --json` lists it under
+`emptyTextFiles`. Standalone image files are skipped as unsupported; OCR them to text or convert them
+to OCRed PDFs before ingesting.
 
 ## Search Returns Weak Results
 

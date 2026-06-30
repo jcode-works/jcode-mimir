@@ -1,4 +1,6 @@
 import { execFileSync } from "node:child_process"
+import { cp, mkdtemp, rm } from "node:fs/promises"
+import { tmpdir } from "node:os"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
@@ -6,22 +8,18 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const cliPath = path.join(packageRoot, "dist", "cli.js")
-const demoRoot = path.join(packageRoot, "examples", "sovereign-rag-demo")
+const demoSourceRoot = path.join(packageRoot, "examples", "sovereign-rag-demo")
+const tempRoot = await mkdtemp(path.join(tmpdir(), "mimir-mcp-smoke-"))
+const demoRoot = path.join(tempRoot, "sovereign-rag-demo")
 const requiredTools = [
   "mimir_status",
   "mimir_search",
   "mimir_ask",
   "mimir_audit",
+  "mimir_evaluate",
+  "mimir_usage_report",
   "mimir_security_audit",
 ]
-
-const ingestReport = runCliJson(["--project-root", demoRoot, "ingest", "--json"])
-if (ingestReport.errors.length > 0) {
-  throw new Error(`Demo ingest failed with ${ingestReport.errors.length} error(s).`)
-}
-if (ingestReport.chunks < 1) {
-  throw new Error("Demo ingest did not index any chunks.")
-}
 
 const client = new Client({ name: "mimir-mcp-smoke", version: "0.0.0" })
 const transport = new StdioClientTransport({
@@ -36,6 +34,17 @@ transport.stderr?.on("data", (chunk) => {
 })
 
 try {
+  await cp(demoSourceRoot, demoRoot, { recursive: true })
+  await rm(path.join(demoRoot, ".kb", "access.log"), { force: true })
+  await rm(path.join(demoRoot, ".kb", "storage"), { recursive: true, force: true })
+  const ingestReport = runCliJson(["--project-root", demoRoot, "ingest", "--json"])
+  if (ingestReport.errors.length > 0) {
+    throw new Error(`Demo ingest failed with ${ingestReport.errors.length} error(s).`)
+  }
+  if (ingestReport.chunks < 1) {
+    throw new Error("Demo ingest did not index any chunks.")
+  }
+
   await client.connect(transport)
 
   const toolsResult = await client.listTools(undefined, { timeout: 5_000 })
@@ -67,6 +76,22 @@ try {
     throw new Error("MCP ask returned no cited sources.")
   }
 
+  const evaluation = await callJsonTool(client, "mimir_evaluate", {
+    goldenPath: "golden-queries.json",
+    failUnder: 1,
+  })
+  if (evaluation.total !== 4 || evaluation.recall !== 1 || evaluation.passed !== true) {
+    throw new Error(`MCP evaluate returned an unexpected report: ${JSON.stringify(evaluation)}`)
+  }
+
+  const usage = await callJsonTool(client, "mimir_usage_report", { days: 7 })
+  if (usage.totalEvents < 1 || typeof usage.eventsByAction !== "object") {
+    throw new Error(`MCP usage report returned an unexpected report: ${JSON.stringify(usage)}`)
+  }
+  if (JSON.stringify(usage).includes(demoRoot)) {
+    throw new Error("MCP usage report should not expose local project paths.")
+  }
+
   console.log(
     JSON.stringify(
       {
@@ -76,6 +101,8 @@ try {
         chunksIndexed: status.chunksIndexed,
         searchResults: searchResults.length,
         askSources: answer.sources.length,
+        evaluationRecall: evaluation.recall,
+        usageEvents: usage.totalEvents,
       },
       null,
       2,
@@ -88,6 +115,7 @@ try {
   throw error
 } finally {
   await client.close()
+  await rm(tempRoot, { recursive: true, force: true })
 }
 
 function runCliJson(args) {

@@ -32,7 +32,7 @@ export async function ingest(options: IngestOptions = {}): Promise<IngestResult>
   const allChunks: TextChunk[] = []
   const errors: IngestResult["errors"] = []
   const redactionCounts: RedactionCount[] = []
-  let emptyFiles = 0
+  const emptyTextFiles: string[] = []
 
   const results = await mapLimit(filesToIndex, config.ingestConcurrency, async (file) => {
     try {
@@ -43,9 +43,10 @@ export async function ingest(options: IngestOptions = {}): Promise<IngestResult>
         config.chunkSize,
         config.chunkOverlap,
       )
-      return { chunks, redactions: redacted.counts, error: null }
+      return { path: file.relativePath, chunks, redactions: redacted.counts, error: null }
     } catch (error) {
       return {
+        path: file.relativePath,
         chunks: [],
         redactions: [],
         error: {
@@ -63,7 +64,7 @@ export async function ingest(options: IngestOptions = {}): Promise<IngestResult>
     }
     redactionCounts.push(...result.redactions)
     if (result.chunks.length === 0) {
-      emptyFiles += 1
+      emptyTextFiles.push(result.path)
     }
     allChunks.push(...result.chunks)
   }
@@ -104,10 +105,11 @@ export async function ingest(options: IngestOptions = {}): Promise<IngestResult>
     chunks: indexRows.length,
     discoveredFiles: inventory.discoveredFiles,
     supportedFiles: files.length,
-    skippedFiles: inventory.skippedFiles.length + emptyFiles,
+    skippedFiles: inventory.skippedFiles.length + emptyTextFiles.length,
     unsupportedFiles: countSkipped(inventory.skippedFiles, "unsupported-extension"),
     oversizedFiles: countSkipped(inventory.skippedFiles, "oversized"),
     sensitiveFiles: countSkipped(inventory.skippedFiles, "sensitive-name"),
+    emptyTextFiles,
     unsupportedExtensions: summarizeUnsupportedExtensions(inventory.skippedFiles),
     redactions: totalRedactions(redactionCounts),
     errors,

@@ -26,6 +26,32 @@ const SENSITIVE_EXTENSIONS = new Set([
     ".pem",
     ".pfx",
 ]);
+const OCR_IMAGE_EXTENSIONS = new Set([
+    ".avif",
+    ".bmp",
+    ".gif",
+    ".heic",
+    ".heif",
+    ".jpeg",
+    ".jpg",
+    ".png",
+    ".tif",
+    ".tiff",
+    ".webp",
+]);
+const TRANSCRIPTION_EXTENSIONS = new Set([
+    ".aac",
+    ".aiff",
+    ".flac",
+    ".m4a",
+    ".mkv",
+    ".mov",
+    ".mp3",
+    ".mp4",
+    ".ogg",
+    ".wav",
+    ".webm",
+]);
 export const DEFAULT_SUPPORTED_EXTENSIONS = new Set([
     ".atom",
     ".adoc",
@@ -139,22 +165,26 @@ export async function inventorySourceFiles(config) {
                 continue;
             }
             if (!supportedExtensions(config).has(extension)) {
+                const normalizedExtension = extension || NO_EXTENSION;
                 skippedFiles.set(absolutePath, {
                     relativePath,
                     source,
-                    extension: extension || NO_EXTENSION,
+                    extension: normalizedExtension,
                     bytes: info.size,
                     reason: "unsupported-extension",
+                    recommendation: skippedRecommendation("unsupported-extension", normalizedExtension),
                 });
                 continue;
             }
             if (info.size > config.maxFileBytes) {
+                const normalizedExtension = extension || NO_EXTENSION;
                 skippedFiles.set(absolutePath, {
                     relativePath,
                     source,
-                    extension: extension || NO_EXTENSION,
+                    extension: normalizedExtension,
                     bytes: info.size,
                     reason: "oversized",
+                    recommendation: skippedRecommendation("oversized", normalizedExtension),
                 });
                 continue;
             }
@@ -217,6 +247,22 @@ function skippedSourceFile(absolutePath, relativePath, source, extension, bytes)
         extension: extension || NO_EXTENSION,
         bytes,
         reason: "sensitive-name",
+        recommendation: skippedRecommendation("sensitive-name", extension || NO_EXTENSION),
     };
+}
+function skippedRecommendation(reason, extension) {
+    if (reason === "sensitive-name") {
+        return "Review manually; secret-like files are skipped to avoid indexing credentials or private keys.";
+    }
+    if (reason === "oversized") {
+        return "Split, compress, or raise maxFileBytes only after confirming the file is safe and useful.";
+    }
+    if (OCR_IMAGE_EXTENSIONS.has(extension)) {
+        return "Run local OCR and save the text as a supported text file, or convert to an OCRed PDF before ingesting.";
+    }
+    if (TRANSCRIPTION_EXTENSIONS.has(extension)) {
+        return "Transcribe to text, VTT, or SRT before ingesting.";
+    }
+    return "Convert to a supported text, PDF, Office, OpenDocument, EPUB, or HTML format; use includeExtensions only for UTF-8 text files.";
 }
 //# sourceMappingURL=files.js.map

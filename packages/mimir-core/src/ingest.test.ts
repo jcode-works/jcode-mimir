@@ -28,6 +28,7 @@ describe("ingest", () => {
     expect(result.rebuiltFiles).toBe(1)
     expect(result.reusedFiles).toBe(0)
     expect(result.unsupportedFiles).toBe(1)
+    expect(result.emptyTextFiles).toEqual([])
     expect(result.unsupportedExtensions).toEqual([{ extension: ".heic", count: 1 }])
 
     await writeFile(path.join(root, "private", "evidence.md"), "Changed version.\n", "utf8")
@@ -60,4 +61,45 @@ describe("ingest", () => {
     expect(second.rebuiltFiles).toBe(1)
     expect(second.reusedFiles).toBe(1)
   })
+
+  it("reports supported files that produce no indexable text", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "mimir-empty-text-"))
+    tempDirs.push(root)
+    await initProject(root)
+    await mkdir(path.join(root, "private"), { recursive: true })
+    await writeFile(path.join(root, "private", "scan.pdf"), createBlankPdf())
+
+    const result = await ingest({ cwd: root })
+
+    expect(result.discoveredFiles).toBe(1)
+    expect(result.supportedFiles).toBe(1)
+    expect(result.indexedFiles).toBe(0)
+    expect(result.chunks).toBe(0)
+    expect(result.skippedFiles).toBe(1)
+    expect(result.emptyTextFiles).toEqual(["private/scan.pdf"])
+  })
 })
+
+function createBlankPdf(): string {
+  return `%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] >>
+endobj
+xref
+0 4
+0000000000 65535 f
+0000000009 00000 n
+0000000058 00000 n
+0000000115 00000 n
+trailer
+<< /Size 4 /Root 1 0 R >>
+startxref
+190
+%%EOF`
+}

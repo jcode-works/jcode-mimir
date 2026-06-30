@@ -61,14 +61,20 @@ describe("listSourceFiles", () => {
         expect.objectContaining({
           relativePath: "private/image.png",
           reason: "unsupported-extension",
+          recommendation:
+            "Run local OCR and save the text as a supported text file, or convert to an OCRed PDF before ingesting.",
         }),
         expect.objectContaining({
           relativePath: "private/private.pem",
           reason: "sensitive-name",
+          recommendation:
+            "Review manually; secret-like files are skipped to avoid indexing credentials or private keys.",
         }),
         expect.objectContaining({
           relativePath: "private/component.vue",
           reason: "oversized",
+          recommendation:
+            "Split, compress, or raise maxFileBytes only after confirming the file is safe and useful.",
         }),
       ]),
     )

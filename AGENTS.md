@@ -41,6 +41,8 @@
   aggregate findings or synthetic reproductions.
 - For private retrieval dogfooding, use `mimir evaluate --fail-under <recall>` as the local recall
   gate, and keep the real corpus, golden query files, and generated evaluation JSON outside Git.
+- Use `mimir usage-report --days <n>` for metadata-only dogfooding summaries; do not read or commit
+  raw access logs when an aggregate report is enough.
 - Keep user-facing titles and marketing surfaces branded as `Mimir`. Use `Mimir Core` only for the
   technical core package and developer-facing metadata.
 - Keep public repository surfaces safe to publish: no active checkout URLs, fake download/update URLs
