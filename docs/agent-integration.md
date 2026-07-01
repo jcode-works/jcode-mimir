@@ -109,9 +109,10 @@ npx mimir install-agent --agents claude
 claude mcp add-json --scope local mimir "$(cat .mimir/claude-mcp-server.json)"
 ```
 
-Claude Code provides the active project path to MCP servers through `CLAUDE_PROJECT_DIR`; Mimir uses
-that value when serving MCP, so the same installed npm package can work inside each repository where
-`mimir setup` was run. Keep the MCP scope local unless you intentionally want to share the server
+Claude Code provides the active project path to MCP servers through `CLAUDE_PROJECT_DIR`. Mimir uses
+that value only when the server working directory does not already point at a configured Mimir
+project. This keeps subfolder knowledge bases inside larger workspaces from being overridden by the
+umbrella repository path. Keep the MCP scope local unless you intentionally want to share the server
 config.
 
 ## Codex
@@ -169,7 +170,8 @@ Cline can discover project skills from `.cline/skills/`. Add the generated MCP J
 `mcpServers` in Cline's MCP configuration when tool access is needed.
 
 For other MCP clients that cannot set `cwd`, set `MIMIR_PROJECT_ROOT=/absolute/path/to/repository`
-when launching `mimir serve-mcp`.
+when launching `mimir serve-mcp`. `MIMIR_PROJECT_ROOT` always wins over `cwd` and agent-provided
+project environment variables.
 
 ## Agent Demo
 

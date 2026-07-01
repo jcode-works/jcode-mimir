@@ -34,8 +34,14 @@ npx mimir ingest
 npx mimir doctor
 ```
 
-If documents live elsewhere, add one path per line to `.mimir/sources.txt`. Relative paths resolve from
-the project root.
+If documents live elsewhere, add paths or glob patterns with `mimir sources add` or edit
+`.mimir/sources.txt`. Relative entries resolve from the project root, and `!` excludes matched files:
+
+```plain text
+../apps/*/README.md
+../apps/*/docs/**/*.md
+!../apps/**/node_modules/**
+```
 
 If files exist but are not supported yet, inspect the skipped inventory:
 
@@ -102,8 +108,9 @@ files become supported only when `legacyWordCommand` is configured.
 The default `local-hash` provider is dependency-light and offline, but it is lexical/hash retrieval,
 not semantic retrieval.
 
-For better semantic retrieval, configure Transformers.js embeddings and preload the model when
-working offline:
+For better semantic retrieval, choose Transformers.js embeddings during setup or preload the model
+later. This requires an explicit one-time model download, but natural-language search quality is
+usually better than the default lexical/hash mode.
 
 ```json
 {
@@ -114,7 +121,13 @@ working offline:
 }
 ```
 
-When remote download is acceptable, preload the configured embedding model first:
+When remote download is acceptable during first setup, use:
+
+```bash
+npx mimir setup --semantic
+```
+
+Or preload the configured embedding model later:
 
 ```bash
 npx mimir models pull --enable
@@ -151,7 +164,7 @@ discard and recreate the whole local index.
 Read the warning lines. Common causes:
 
 - `.mimir/` is not ignored by Git.
-- Legacy projects using `.kb/` or `private/**` are missing the matching legacy Git ignore entries.
+- Legacy projects using `.kb/`, `private/`, or `private/**` are missing the matching legacy Git ignore entries.
 - Redaction was disabled.
 - Transformers.js remote model loading was enabled.
 
