@@ -57,13 +57,23 @@ flowchart TD
   MCP --> LLM
 ```
 
-The fastest useful path:
+The fastest useful path is to install Mimir in the repository, wire it into the coding agent you
+already use, then ask that agent questions grounded in local files:
 
 ```bash
 pnpm add -D @jcode.labs/mimir
 pnpm exec mimir setup
+pnpm exec mimir install-agent --agents claude,codex,kimi
 pnpm exec mimir doctor --fix
-pnpm exec mimir ask "What does this repository say about deployment?"
+
+# Claude Code
+claude mcp add-json --scope local mimir "$(cat .mimir/claude-mcp-server.json)"
+
+# Codex
+cat .mimir/codex-mcp.toml
+
+# Kimi Code CLI
+kimi --mcp-config-file .mimir/kimi-mcp.json
 ```
 
 Use it when an agent needs grounded context over private specs, codebases, legal dossiers, tenders,
@@ -251,6 +261,29 @@ Fresh setup keeps local state under one ignored `.mimir/` folder:
 
 It detects the repository package manager and writes the MCP helper files with the right command:
 `pnpm exec mimir serve-mcp`, `npx mimir serve-mcp`, `yarn exec mimir serve-mcp`, or `bunx mimir serve-mcp`.
+
+For the usual agent-first workflow, expose Mimir to the coding assistants used in the repository:
+
+```bash
+pnpm exec mimir install-agent --agents claude,codex,kimi
+```
+
+Then wire the agent you use:
+
+```bash
+# Claude Code: registers the local MCP server for this repository.
+claude mcp add-json --scope local mimir "$(cat .mimir/claude-mcp-server.json)"
+
+# Codex: review and merge the generated MCP and skills config.
+cat .mimir/codex-mcp.toml
+
+# Kimi Code CLI: launch Kimi with the generated Mimir MCP config.
+kimi --mcp-config-file .mimir/kimi-mcp.json
+```
+
+From the agent, ask naturally, for example: "Use Mimir to find what this repository says about
+deployment." The agent calls the MCP tools and uses the bundled skills to work with cited local
+context.
 
 Check readiness at any time:
 

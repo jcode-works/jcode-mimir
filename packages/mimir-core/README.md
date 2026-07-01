@@ -41,14 +41,27 @@ pnpm add -D @jcode.labs/mimir
 
 ```bash
 pnpm exec mimir setup
-pnpm exec mimir search "your question"
-pnpm exec mimir ask "your question"
+pnpm exec mimir install-agent --agents claude,codex,kimi
+pnpm exec mimir doctor --fix
+
+# Claude Code
+claude mcp add-json --scope local mimir "$(cat .mimir/claude-mcp-server.json)"
+
+# Codex
+cat .mimir/codex-mcp.toml
+
+# Kimi Code CLI
+kimi --mcp-config-file .mimir/kimi-mcp.json
 ```
 
 By default, Mimir keeps local config, raw documents, generated indexes, access logs, models, reports,
 audio, and agent helper files under a single ignored `.mimir/` project folder. It reports
 unsupported/skipped files during ingestion and reports supported files that produced no extractable
 text. `mimir setup` adds the matching Git ignore entry for local Mimir state.
+
+The primary workflow is agent-first: Claude Code, Codex, Kimi, or another MCP-capable assistant asks
+Mimir for cited local context, then writes or reasons from those citations. For terminal checks, use
+`pnpm exec mimir search "your question"` or `pnpm exec mimir ask "your question"`.
 
 Run `pnpm exec mimir doctor --fix` later to repair missing setup or rebuild stale indexes.
 For better semantic Q&A, run `pnpm exec mimir models pull --enable`, then run
