@@ -7,6 +7,7 @@ import {
   LEGACY_CONFIG_PATH,
   LEGACY_DEFAULT_CONFIG,
   MIMIR_DIR,
+  SOURCES_FILE_HEADER,
 } from "./defaults.js"
 import { ensureMimirGitignore } from "./gitignore.js"
 
@@ -34,17 +35,7 @@ export async function initProject(cwd = process.cwd()): Promise<string[]> {
   )
   if (!existsSync(sourcesPath)) {
     await mkdir(path.dirname(sourcesPath), { recursive: true })
-    await writeFile(
-      sourcesPath,
-      [
-        "# Optional extra source paths or glob patterns, one per line.",
-        "# Relative paths resolve from the project root. Prefix glob exclusions with !.",
-        "# Example: ../apps/*/docs/**/*.md",
-        "# Example: !../apps/**/node_modules/**",
-        "",
-      ].join("\n"),
-      "utf8",
-    )
+    await writeFile(sourcesPath, SOURCES_FILE_HEADER.join("\n"), "utf8")
     created.push(path.relative(root, sourcesPath))
   }
 

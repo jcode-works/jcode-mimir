@@ -8,6 +8,7 @@ import {
   LEGACY_CONFIG_PATH,
   LEGACY_DEFAULT_CONFIG,
 } from "./defaults.js"
+import { isRecord } from "./guards.js"
 import type { Config } from "./types.js"
 
 const embeddingProviderSchema = z.enum(["local-hash", "transformers"])
@@ -256,10 +257,6 @@ function applyEnv(config: RawConfig): RawConfig {
       config.legacyWordTimeoutMs,
     ),
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
 }
 
 function normalizeExtensions(extensions: string[]): string[] {

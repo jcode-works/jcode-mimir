@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 import { CONFIG_PATH, DEFAULT_CONFIG, LEGACY_CONFIG_PATH, LEGACY_DEFAULT_CONFIG, } from "./defaults.js";
+import { isRecord } from "./guards.js";
 const embeddingProviderSchema = z.enum(["local-hash", "transformers"]);
 const rawConfigSchema = z.object({
     rawDir: z.string().default(DEFAULT_CONFIG.rawDir),
@@ -153,9 +154,6 @@ function applyEnv(config) {
         legacyWordCommand: readJsonStringArrayEnv("MIMIR_LEGACY_WORD_COMMAND", "KB_LEGACY_WORD_COMMAND", config.legacyWordCommand),
         legacyWordTimeoutMs: readPositiveIntEnv("MIMIR_LEGACY_WORD_TIMEOUT_MS", "KB_LEGACY_WORD_TIMEOUT_MS", config.legacyWordTimeoutMs),
     };
-}
-function isRecord(value) {
-    return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function normalizeExtensions(extensions) {
     return [
