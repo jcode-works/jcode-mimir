@@ -71,7 +71,7 @@ function nextActions(input) {
             steps.push("Mimir found files, but none are currently indexable. Run `mimir audit --unsupported` to inspect skipped files.");
         }
         else {
-            steps.push("Add supported files under .mimir/raw/ or list extra source paths in .mimir/sources.txt.");
+            steps.push('Add supported files under .mimir/raw/ or list extra source paths in the "sources" array of .mimir/config.json.');
         }
         return steps;
     }

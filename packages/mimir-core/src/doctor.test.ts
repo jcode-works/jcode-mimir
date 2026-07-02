@@ -34,7 +34,7 @@ describe("doctor", () => {
     expect(initialized.initialized).toBe(true)
     expect(initialized.supportedFiles).toBe(0)
     expect(initialized.nextSteps).toEqual([
-      "Add supported files under .mimir/raw/ or list extra source paths in .mimir/sources.txt.",
+      'Add supported files under .mimir/raw/ or list extra source paths in the "sources" array of .mimir/config.json.',
     ])
 
     await mkdir(path.join(root, ".mimir", "raw"), { recursive: true })

@@ -100,7 +100,7 @@ function nextActions(input: NextActionInput): string[] {
       )
     } else {
       steps.push(
-        "Add supported files under .mimir/raw/ or list extra source paths in .mimir/sources.txt.",
+        'Add supported files under .mimir/raw/ or list extra source paths in the "sources" array of .mimir/config.json.',
       )
     }
     return steps

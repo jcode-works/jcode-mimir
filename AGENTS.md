@@ -32,9 +32,9 @@
 - Keep first-run UX centered on `mimir setup` for full onboarding and `mimir doctor --fix` for safe
   repairs. `mimir init`, `mimir install-skill`, and `mimir ingest` remain available as explicit
   lower-level commands.
-- Keep monorepo source onboarding simple: `.mimir/sources.txt` accepts paths, glob patterns, and
-  `!` exclusions, and `mimir sources add/list` is the CLI surface for updating it without manual
-  editing.
+- Keep monorepo source onboarding simple: the `sources` array in `.mimir/config.json` accepts paths,
+  glob patterns, and `!` exclusions. The legacy `.mimir/sources.txt` file (managed by `mimir sources
+  add/list`) is still read and merged when present, but `mimir init` no longer creates it.
 - Keep product documentation canonical in the root `README.md`. Package README files under
   `packages/*/README.md` are intentionally minimal npm entrypoints and must link clearly to the
   GitHub root README because npm displays package README files separately.

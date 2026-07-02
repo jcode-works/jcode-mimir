@@ -304,24 +304,31 @@ async function sourceInputs(config) {
     const roots = [config.rawDir];
     const patterns = [];
     const ignorePatterns = [];
-    if (!existsSync(config.sourcesFile)) {
-        return { roots, patterns, ignorePatterns };
-    }
-    const content = await readFile(config.sourcesFile, "utf8");
-    for (const line of content.split(/\r?\n/u)) {
-        const trimmed = line.trim();
+    const classifyEntry = (entry) => {
+        const trimmed = entry.trim();
         if (!trimmed || trimmed.startsWith("#")) {
-            continue;
+            return;
         }
         if (trimmed.startsWith("!")) {
             ignorePatterns.push(sourcePattern(config.projectRoot, trimmed.slice(1).trim()));
-            continue;
+            return;
         }
         if (GLOB_PATTERN_CHARS.test(trimmed)) {
             patterns.push(sourcePattern(config.projectRoot, trimmed));
-            continue;
+            return;
         }
         roots.push(path.isAbsolute(trimmed) ? trimmed : path.resolve(config.projectRoot, trimmed));
+    };
+    // Inline `sources` from config.json are the primary mechanism; the legacy
+    // sources.txt file is still read when present so existing projects keep working.
+    for (const entry of config.sources) {
+        classifyEntry(entry);
+    }
+    if (existsSync(config.sourcesFile)) {
+        const content = await readFile(config.sourcesFile, "utf8");
+        for (const line of content.split(/\r?\n/u)) {
+            classifyEntry(line);
+        }
     }
     return { roots, patterns, ignorePatterns };
 }

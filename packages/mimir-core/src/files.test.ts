@@ -264,6 +264,51 @@ describe("listSourceFiles", () => {
     ])
   })
 
+  it("indexes sources declared inline in the config", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "mimir-config-sources-"))
+    tempDirs.push(root)
+
+    await mkdir(path.join(root, ".mimir", "raw"), { recursive: true })
+    await mkdir(path.join(root, "apps", "front", "docs", "private"), { recursive: true })
+    await mkdir(path.join(root, "apps", "back", "docs"), { recursive: true })
+    await writeFile(path.join(root, "apps", "front", "README.md"), "front readme\n", "utf8")
+    await writeFile(path.join(root, "apps", "front", "docs", "feature.md"), "front docs\n", "utf8")
+    await writeFile(
+      path.join(root, "apps", "front", "docs", "private", "secret.md"),
+      "private docs\n",
+      "utf8",
+    )
+    await writeFile(path.join(root, "apps", "back", "docs", "api.md"), "back docs\n", "utf8")
+
+    const files = await listSourceFiles(
+      testConfig(root, {
+        sources: ["apps/*/README.md", "apps/*/docs/**/*.md", "!apps/*/docs/private/**"],
+      }),
+    )
+
+    expect(files.map((file) => file.relativePath)).toEqual([
+      "apps/back/docs/api.md",
+      "apps/front/docs/feature.md",
+      "apps/front/README.md",
+    ])
+  })
+
+  it("merges inline config sources with the legacy sources file", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "mimir-sources-merge-"))
+    tempDirs.push(root)
+
+    await mkdir(path.join(root, ".mimir", "raw"), { recursive: true })
+    await mkdir(path.join(root, "inline"), { recursive: true })
+    await mkdir(path.join(root, "legacy"), { recursive: true })
+    await writeFile(path.join(root, "inline", "README.md"), "inline\n", "utf8")
+    await writeFile(path.join(root, "legacy", "README.md"), "legacy\n", "utf8")
+    await writeFile(path.join(root, ".mimir", "sources.txt"), "legacy/README.md\n", "utf8")
+
+    const files = await listSourceFiles(testConfig(root, { sources: ["inline/README.md"] }))
+
+    expect(files.map((file) => file.relativePath)).toEqual(["inline/README.md", "legacy/README.md"])
+  })
+
   it("indexes parent-relative glob sources from a nested knowledge base", async () => {
     const monorepo = await mkdtemp(path.join(os.tmpdir(), "mimir-monorepo-glob-"))
     tempDirs.push(monorepo)

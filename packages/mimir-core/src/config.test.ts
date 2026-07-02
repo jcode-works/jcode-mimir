@@ -39,6 +39,7 @@ describe("loadConfig", () => {
     expect(config.redaction.enabled).toBe(true)
     expect(config.accessLog).toBe(true)
     expect(config.mcpMaxTopK).toBe(10)
+    expect(config.sources).toEqual([])
     expect(config.includeExtensions).toEqual([])
     expect(config.pdfOcrCommand).toEqual([])
     expect(config.pdfOcrTimeoutMs).toBe(120_000)
@@ -46,6 +47,20 @@ describe("loadConfig", () => {
     expect(config.imageOcrTimeoutMs).toBe(120_000)
     expect(config.legacyWordCommand).toEqual([])
     expect(config.legacyWordTimeoutMs).toBe(120_000)
+  })
+
+  it("keeps inline source paths and globs from config", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "jcode-kb-"))
+    tempDirs.push(root)
+    await mkdir(path.join(root, ".mimir"), { recursive: true })
+    await writeFile(
+      path.join(root, ".mimir/config.json"),
+      JSON.stringify({ sources: ["../apps/*/README.md", "!../apps/**/node_modules/**"] }),
+      "utf8",
+    )
+
+    const config = await loadConfig(root)
+    expect(config.sources).toEqual(["../apps/*/README.md", "!../apps/**/node_modules/**"])
   })
 
   it("normalizes custom text extensions from config and env", async () => {

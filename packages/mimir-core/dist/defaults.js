@@ -21,6 +21,7 @@ export const DEFAULT_CONFIG = {
     rawDir: MIMIR_RAW_DIR,
     storageDir: `${MIMIR_DIR}/storage`,
     sourcesFile: `${MIMIR_DIR}/sources.txt`,
+    sources: [],
     accessLogPath: `${MIMIR_DIR}/access.log`,
     embeddingModelPath: `${MIMIR_DIR}/models`,
     tableName: "chunks",

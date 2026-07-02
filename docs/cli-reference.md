@@ -11,7 +11,7 @@ Mimir ships two CLIs:
 | --- | --- |
 | `mimir setup` | Initialize Mimir, install the agent kit, run doctor, and ingest when safe. |
 | `mimir setup --semantic` | Run first setup and explicitly download the configured Transformers.js embedding model for higher-quality semantic retrieval. |
-| `mimir init` | Create `.mimir/config.json`, `.mimir/sources.txt`, `.mimir/raw/`, and Git ignore rules. |
+| `mimir init` | Create `.mimir/config.json` (with a `sources` array), `.mimir/raw/`, and Git ignore rules. |
 | `mimir doctor` | Diagnose setup, index freshness, security warnings, and the next command to run. |
 | `mimir doctor --fix` | Create missing scaffolding, install skills/MCP config, and update stale indexes when safe. |
 | `mimir models pull` | Download the configured Transformers.js embedding model into `embeddingModelPath`. |
