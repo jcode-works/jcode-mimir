@@ -140,6 +140,37 @@ describe("listSourceFiles", () => {
     )
   })
 
+  it("skips additional secret-like files by name and extension", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "mimir-secrets-"))
+    tempDirs.push(root)
+
+    await mkdir(path.join(root, ".mimir", "raw"), { recursive: true })
+    await writeFile(path.join(root, ".mimir", "raw", ".env.development"), "TOKEN=dev\n", "utf8")
+    await writeFile(path.join(root, ".mimir", "raw", ".env.example"), "TOKEN=changeme\n", "utf8")
+    await writeFile(path.join(root, ".mimir", "raw", "id_rsa"), "PRIVATE\n", "utf8")
+    await writeFile(path.join(root, ".mimir", "raw", "credentials"), "aws creds\n", "utf8")
+    await writeFile(path.join(root, ".mimir", "raw", "service.p8"), "apple key\n", "utf8")
+    await writeFile(path.join(root, ".mimir", "raw", "keep.md"), "safe evidence\n", "utf8")
+
+    const inventory = await inventorySourceFiles(testConfig(root))
+
+    expect(inventory.supportedFiles.map((file) => file.relativePath)).toEqual([
+      ".mimir/raw/keep.md",
+    ])
+    const sensitive = inventory.skippedFiles
+      .filter((file) => file.reason === "sensitive-name")
+      .map((file) => file.relativePath)
+    expect(sensitive).toEqual(
+      expect.arrayContaining([
+        ".mimir/raw/.env.development",
+        ".mimir/raw/.env.example",
+        ".mimir/raw/credentials",
+        ".mimir/raw/id_rsa",
+        ".mimir/raw/service.p8",
+      ]),
+    )
+  })
+
   it("indexes image files only when an OCR command is configured", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "mimir-image-files-"))
     tempDirs.push(root)

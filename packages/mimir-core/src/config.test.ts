@@ -254,4 +254,38 @@ describe("loadConfig", () => {
       }
     }
   })
+
+  it("rejects a chunkOverlap greater than or equal to chunkSize", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "jcode-kb-"))
+    tempDirs.push(root)
+    await mkdir(path.join(root, ".mimir"), { recursive: true })
+    await writeFile(
+      path.join(root, ".mimir/config.json"),
+      JSON.stringify({ chunkSize: 500, chunkOverlap: 500 }),
+      "utf8",
+    )
+
+    await expect(loadConfig(root)).rejects.toThrow("chunkOverlap must be lower than chunkSize.")
+  })
+
+  it("overrides mcpMaxTopK from env and falls back to the default on invalid values", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "jcode-kb-"))
+    tempDirs.push(root)
+    await mkdir(path.join(root, ".mimir"), { recursive: true })
+    await writeFile(path.join(root, ".mimir/config.json"), "{}\n", "utf8")
+
+    const original = process.env.MIMIR_MCP_MAX_TOP_K
+    process.env.MIMIR_MCP_MAX_TOP_K = "3"
+    try {
+      expect((await loadConfig(root)).mcpMaxTopK).toBe(3)
+      process.env.MIMIR_MCP_MAX_TOP_K = "not-a-number"
+      expect((await loadConfig(root)).mcpMaxTopK).toBe(10)
+    } finally {
+      if (original === undefined) {
+        delete process.env.MIMIR_MCP_MAX_TOP_K
+      } else {
+        process.env.MIMIR_MCP_MAX_TOP_K = original
+      }
+    }
+  })
 })
